@@ -6,15 +6,18 @@ interface CreateLabelFormProps {
   onCancel: () => void;
 }
 
+// Available color options for label customization
 const COLORS = [
   'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500',
   'bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500'
 ];
 
 export function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
+  // State management for form inputs
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
 
+  // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
@@ -29,7 +32,9 @@ export function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
 
   return (
     <div className="p-4 border-b border-gray-700">
-      <form onSubmit={handleSubmit} className="flex items-end space-x-4">
+      <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row lg:items-end space-y-4 lg:space-y-0 lg:space-x-4">
+        
+        {/* Label Name Input Section */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-400 mb-1">
             Label Name
@@ -42,7 +47,9 @@ export function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
             placeholder="Enter label name"
           />
         </div>
-        <div>
+
+        {/* Color Selection Section */}
+        <div className="w-full md:w-auto">
           <label className="block text-sm font-medium text-gray-400 mb-1">
             Color
           </label>
@@ -55,11 +62,14 @@ export function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
                   selectedColor === color ? 'ring-2 ring-white' : ''
                 }`}
                 onClick={() => setSelectedColor(color)}
+                aria-label={`Select ${color.replace('bg-', '').replace('-500', '')} color`}
               />
             ))}
           </div>
         </div>
-        <div className="flex space-x-2">
+
+        {/* Action Buttons Section */}
+        <div className="flex space-x-2 w-full md:w-auto justify-end">
           <button
             type="button"
             onClick={onCancel}
