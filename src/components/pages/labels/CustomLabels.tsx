@@ -33,8 +33,8 @@ export function CustomLabels({ labels, onCreateLabel }: CustomLabelsProps) {
 
       {isCreating && (
         <CreateLabelForm
-          onSubmit={(name, color) => {
-            onCreateLabel(name, color);
+          onSubmit={(labelData) => {
+            onCreateLabel(labelData.name, labelData.color);
             setIsCreating(false);
           }}
           onCancel={() => setIsCreating(false)}

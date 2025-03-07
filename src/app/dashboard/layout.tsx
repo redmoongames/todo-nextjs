@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { MobileOverlay } from '@/components/pages/Dashboard/layout/MobileOverlay';
-import { MenuContainer } from '@/components/pages/Dashboard/layout/MenuContainer';
-import { MenuToggleButton } from '@/components/pages/Dashboard/layout/MenuToggleButton';
+import { MobileOverlay } from '@/components/pages/dashboard/layout/MobileOverlay';
+import { MenuContainer } from '@/components/pages/dashboard/layout/MenuContainer';
+import { MenuToggleButton } from '@/components/pages/dashboard/layout/MenuToggleButton';
 
 export default function DashboardLayout({
   children,
