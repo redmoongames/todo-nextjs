@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, ReactElement } from 'react';
+import React, { useState, useEffect, useRef, ReactElement, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Task, CompletedTask, useTodoService } from '@/todo';
@@ -24,28 +24,7 @@ export default function Page(): ReactElement {
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const hasFetchedRef = useRef<boolean>(false);
 
-  useEffect(() => {
-    console.log('[DASHBOARD] Checking auth status...');
-    if (!authLoading && !isAuthenticated) {
-      console.log('[DASHBOARD] User not authenticated, redirecting to login');
-      router.replace('/login');
-      return;
-    }
-
-    if (!authLoading && isAuthenticated && !hasFetchedRef.current) {
-      console.log('[DASHBOARD] User authenticated, fetching tasks');
-      fetchTasks();
-      hasFetchedRef.current = true;
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  const handleLogout = async () => {
-    console.log('[DASHBOARD] Logging out...');
-    await logout();
-    router.replace('/login');
-  };
-
-  async function fetchTasks(): Promise<void> {
+  const fetchTasks = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -68,7 +47,28 @@ export default function Page(): ReactElement {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [todoService, openModal]);
+
+  useEffect(() => {
+    console.log('[DASHBOARD] Checking auth status...');
+    if (!authLoading && !isAuthenticated) {
+      console.log('[DASHBOARD] User not authenticated, redirecting to login');
+      router.replace('/login');
+      return;
+    }
+
+    if (!authLoading && isAuthenticated && !hasFetchedRef.current) {
+      console.log('[DASHBOARD] User authenticated, fetching tasks');
+      fetchTasks();
+      hasFetchedRef.current = true;
+    }
+  }, [authLoading, isAuthenticated, router, fetchTasks]);
+
+  const handleLogout = async () => {
+    console.log('[DASHBOARD] Logging out...');
+    await logout();
+    router.replace('/login');
+  };
 
   async function handleTaskComplete(taskId: string): Promise<void> {
     try {

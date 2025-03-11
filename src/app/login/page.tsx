@@ -33,7 +33,11 @@ export default function Page() {
       
       if (success) {
         console.log('[LOGIN PAGE] Authentication successful, redirecting...');
-        router.replace('/todo/dashboard');
+        
+        // Add a small delay to ensure tokens are saved before redirecting
+        setTimeout(() => {
+          router.replace('/todo/dashboard');
+        }, 100);
       } else {
         console.log('[LOGIN PAGE] Authentication failed');
       }
@@ -46,7 +50,7 @@ export default function Page() {
     setIsRegistering(!isRegistering);
   };
 
-  let headerTest = isRegistering ? 'Create your account' : 'Sign in to your account';
+  const headerTest = isRegistering ? 'Create your account' : 'Sign in to your account';
 
   // Show loading state while checking authentication
   if (isLoading) {

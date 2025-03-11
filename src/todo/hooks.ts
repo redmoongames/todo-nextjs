@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTodo } from './TodoProvider';
-import { Task, CompletedTask, Label } from './types';
+import { Task } from './types';
 
 /**
  * Hook to access the TodoService instance

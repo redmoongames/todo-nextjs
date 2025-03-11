@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { IoArrowBack, IoTrashOutline, IoCheckmarkCircle, IoAdd } from 'react-icons/io5';
 import Link from 'next/link';
@@ -42,6 +42,13 @@ export default function TaskPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isAddingLabel, setIsAddingLabel] = useState(false);
+
+  // Simulate fetching task data based on taskId
+  useEffect(() => {
+    console.log(`Fetching task data for taskId: ${taskId}`);
+    // In a real app, we would fetch the task data from an API
+    // For now, we're using dummy data
+  }, [taskId]);
 
   const handleTitleChange = (newTitle: string) => {
     setTask(prev => ({ ...prev, title: newTitle }));

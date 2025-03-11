@@ -3,9 +3,15 @@
 import React, { useState } from 'react';
 import { IoSearch } from 'react-icons/io5';
 
+interface SearchResult {
+  id: number;
+  title: string;
+  description: string;
+}
+
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { CompletedTask } from '@/todo';
+import Image from 'next/image';
 
 interface CompletedTasksProps {
   tasks: CompletedTask[];
@@ -31,10 +32,12 @@ export function CompletedTasks({ tasks }: CompletedTasksProps) {
                   <h3 className="text-lg font-medium text-gray-100 line-through">{task.title}</h3>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-sm text-gray-400">
-                  <img
+                  <Image
                     src={task.completedBy.avatar}
                     alt={task.completedBy.name}
-                    className="w-5 h-5 rounded-full"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
                   />
                   <span>Completed by {task.completedBy.name}</span>
                   <span>•</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { AuthService } from '../AuthService';
 import { AuthState, AuthContextType } from '../types';
 
@@ -23,7 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null
   });
 
-  const router = useRouter();
   const pathname = usePathname();
 
   // Check authentication status on mount and when pathname changes
@@ -34,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // If we're on the login page, clear stale tokens
         if (pathname.includes('/login')) {
+          console.debug("[DEBUG] On login page, checking for stale tokens");
           authService.clearStaleTokensOnLoginPage();
         }
         
@@ -51,6 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
+        console.debug("[DEBUG] Access token found, checking if refresh needed");
+        
         // Check if token needs refresh before verifying
         if (authService.needsTokenRefresh()) {
           console.debug("[DEBUG] Token needs refresh, attempting to refresh");
@@ -65,9 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }));
             return;
           }
+          console.debug("[DEBUG] Token refreshed successfully");
         }
         
         // Verify the token
+        console.debug("[DEBUG] Verifying token");
         const isValid = await authService.verifyToken();
         
         if (!isValid) {
@@ -83,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Get user data
         const user = authService.getUser();
+        console.debug("[DEBUG] Token verified, user authenticated:", user?.username);
         
         setAuthState(prev => ({ 
           ...prev, 

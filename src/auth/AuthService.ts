@@ -30,6 +30,7 @@ export class AuthService {
 
   private constructor() {
     this.API_URL = API_URL;
+    console.debug("[DEBUG] Initializing AuthService with API URL:", this.API_URL);
     this.loadTokensFromStorage();
   }
 
@@ -45,6 +46,8 @@ export class AuthService {
     if (typeof window === 'undefined') return;
     
     try {
+      console.debug("[DEBUG] Loading tokens from storage");
+      
       this.accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
       this.refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
       
@@ -53,6 +56,13 @@ export class AuthService {
       
       const userStr = localStorage.getItem(this.USER_KEY);
       this.user = userStr ? JSON.parse(userStr) : null;
+      
+      console.debug("[DEBUG] Tokens loaded", { 
+        hasAccessToken: !!this.accessToken,
+        hasRefreshToken: !!this.refreshToken,
+        hasUser: !!this.user,
+        tokenExpiry: this.tokenExpiryTime ? new Date(this.tokenExpiryTime).toISOString() : null
+      });
     } catch (error) {
       console.error('Error loading tokens from storage:', error);
       this.clearTokens();
@@ -63,6 +73,12 @@ export class AuthService {
     if (typeof window === 'undefined') return;
     
     try {
+      console.debug("[DEBUG] Saving tokens to storage", { 
+        accessTokenLength: tokens.access.length,
+        refreshTokenLength: tokens.refresh.length,
+        user: user.username 
+      });
+      
       this.accessToken = tokens.access;
       this.refreshToken = tokens.refresh;
       this.user = user;
@@ -75,6 +91,8 @@ export class AuthService {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, tokens.refresh);
       localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      
+      console.debug("[DEBUG] Tokens saved successfully");
     } catch (error) {
       console.error('Error saving tokens to storage:', error);
     }
@@ -128,51 +146,141 @@ export class AuthService {
     return Date.now() > (this.tokenExpiryTime - refreshThreshold);
   }
 
+  // Helper method to decode JWT token for debugging
+  private decodeJWT(token: string): Record<string, unknown> {
+    try {
+      // Split the token into parts
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.error('[DEBUG] Invalid JWT format');
+        return {};
+      }
+      
+      // Decode the payload (middle part)
+      const payload = parts[1];
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('[DEBUG] Error decoding JWT:', error);
+      return {};
+    }
+  }
+
   // API methods
   private async fetchWithAuth(endpoint: string, options: RequestInit = {}): Promise<AuthResponse> {
-    const response = await fetch(`${this.API_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include',
-    });
+    try {
+      console.debug(`[DEBUG] Fetching ${endpoint}`, { 
+        method: options.method || 'GET',
+        hasAuthHeader: !!(options.headers && 'Authorization' in options.headers)
+      });
+      
+      // Log the full authorization header for debugging (only in development)
+      if (options.headers && 'Authorization' in options.headers) {
+        const authHeader = options.headers['Authorization'] as string;
+        console.debug(`[DEBUG] Authorization header: ${authHeader.substring(0, 15)}...`);
+      }
+      
+      const response = await fetch(`${this.API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...options.headers,
+        },
+        credentials: 'include',
+      });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Authentication failed');
+      console.debug(`[DEBUG] Response status: ${response.status} ${response.statusText}`);
+      
+      // Log response headers for debugging
+      const headers: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      console.debug('[DEBUG] Response headers:', headers);
+      
+      const data = await response.json();
+      console.debug('[DEBUG] Response data:', data);
+      
+      if (!response.ok) {
+        console.error(`[DEBUG] API error (${response.status}):`, data.error || 'Unknown error');
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error(`[DEBUG] Fetch error for ${endpoint}:`, error);
+      throw error;
     }
-
-    return data;
   }
 
   public async login(username: string, password: string): Promise<AuthResponse> {
-    const response = await this.fetchWithAuth(API_ENDPOINTS.LOGIN, {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-    
-    if (response.success && response.data) {
-      this.saveTokensToStorage(response.data.tokens, response.data.user);
+    try {
+      // Clear any existing tokens before login
+      this.clearTokens();
+      
+      const response = await this.fetchWithAuth(API_ENDPOINTS.LOGIN, {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+      
+      if (response.success && response.data) {
+        console.debug("[DEBUG] Login successful, saving tokens");
+        this.saveTokensToStorage(response.data.tokens, response.data.user);
+        
+        // Verify the token format
+        const decodedToken = this.decodeJWT(response.data.tokens.access);
+        console.debug("[DEBUG] Saved token payload:", decodedToken);
+        
+        // Verify that the token contains a user_id
+        if (!decodedToken || !decodedToken.user_id) {
+          console.error("[DEBUG] Token missing user_id field!");
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("[DEBUG] Login error:", error);
+      throw error;
     }
-    
-    return response;
   }
 
   public async register(username: string, password: string): Promise<AuthResponse> {
-    const response = await this.fetchWithAuth(API_ENDPOINTS.REGISTER, {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-    
-    if (response.success && response.data) {
-      this.saveTokensToStorage(response.data.tokens, response.data.user);
+    try {
+      // Clear any existing tokens before registration
+      this.clearTokens();
+      
+      const response = await this.fetchWithAuth(API_ENDPOINTS.REGISTER, {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+      
+      if (response.success && response.data) {
+        console.debug("[DEBUG] Registration successful, saving tokens");
+        this.saveTokensToStorage(response.data.tokens, response.data.user);
+        
+        // Verify the token format
+        const decodedToken = this.decodeJWT(response.data.tokens.access);
+        console.debug("[DEBUG] Saved token payload:", decodedToken);
+        
+        // Verify that the token contains a user_id
+        if (!decodedToken || !decodedToken.user_id) {
+          console.error("[DEBUG] Token missing user_id field!");
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("[DEBUG] Registration error:", error);
+      throw error;
     }
-    
-    return response;
   }
 
   public async logout(): Promise<void> {
@@ -193,19 +301,39 @@ export class AuthService {
   }
 
   public async verifyToken(): Promise<boolean> {
-    if (!this.accessToken) return false;
+    if (!this.accessToken) {
+      console.debug("[DEBUG] No access token available for verification");
+      return false;
+    }
+    
+    // Debug: Decode and log token contents
+    const decodedToken = this.decodeJWT(this.accessToken);
+    console.debug("[DEBUG] Token payload:", decodedToken);
     
     try {
+      console.debug("[DEBUG] Verifying token");
+      
+      // Ensure the token is properly formatted
+      const token = this.accessToken.trim();
+      
       const response = await this.fetchWithAuth(API_ENDPOINTS.VERIFY, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
+      console.debug("[DEBUG] Token verification successful");
       return response.success;
     } catch (error) {
-      console.error('Token verification failed:', error);
+      console.error('[DEBUG] Token verification failed:', error);
+      
+      // If token verification fails, clear tokens to force re-login
+      if (error instanceof Error && error.message.includes('Invalid token')) {
+        console.debug("[DEBUG] Clearing invalid tokens");
+        this.clearTokens();
+      }
+      
       return false;
     }
   }
@@ -230,5 +358,10 @@ export class AuthService {
       this.clearTokens();
       return false;
     }
+  }
+
+  // Method to get the current API URL (useful for debugging)
+  public getApiUrl(): string {
+    return this.API_URL;
   }
 } 

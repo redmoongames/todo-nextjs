@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, ReactNode, useState } from 'react';
 import { TodoService } from './TodoService';
-import { Task, CompletedTask, Label } from './types';
 
 // Initialize the TodoService
 const todoService = TodoService.getInstance();
@@ -17,8 +16,8 @@ interface TodoContextValue {
 const TodoContext = createContext<TodoContextValue | null>(null);
 
 export function TodoProvider({ children }: { children: ReactNode }) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading] = useState<boolean>(false);
+  const [error] = useState<string | null>(null);
 
   const value: TodoContextValue = {
     todoService,

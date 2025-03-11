@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Task } from '@/todo';
 
@@ -12,19 +12,6 @@ interface TodoListProps {
 }
 
 export function TodoList({ tasks, onTaskComplete, onTaskDelete, onTaskClick }: TodoListProps) {
-  const [dissolvingTasks, setDissolvingTasks] = useState<string[]>([]);
-
-  const handleTaskComplete = async (taskId: string) => {
-    // Start dissolution animation
-    setDissolvingTasks((prev) => [...prev, taskId]);
-
-    // Wait for animation to complete before actually removing the task
-    setTimeout(() => {
-      onTaskComplete(taskId);
-      setDissolvingTasks((prev) => prev.filter(id => id !== taskId));
-    }, 1000);
-  };
-
   return (
     <div className="space-y-4">
       <AnimatePresence mode="popLayout">
