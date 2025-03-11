@@ -1,4 +1,4 @@
-import { Button } from '../../ui/Button';
+import { Button } from '../ui/Button';
 import { LoginSkeleton } from './LoginSkeleton';
 import { StickyNote } from './StickyNote';
 import { useLoginContent } from './useLoginContent';
