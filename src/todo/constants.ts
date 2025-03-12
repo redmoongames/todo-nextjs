@@ -1,11 +1,7 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+import { TODO_ENDPOINTS, API_URL } from '../api/config';
 
-export const API_ENDPOINTS = {
-  TASKS: '/tasks/',
-  TASK_BY_ID: (id: string) => `/tasks/${id}/`,
-  LABELS: '/labels/',
-  LABEL_BY_ID: (id: string) => `/labels/${id}/`,
-} as const;
+// Re-export the API URL and endpoints for backward compatibility
+export { API_URL, TODO_ENDPOINTS as API_ENDPOINTS };
 
 export const PRIORITY_OPTIONS = {
   LOW: 'low',
