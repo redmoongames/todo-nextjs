@@ -1,6 +1,7 @@
 import { AuthService } from '@/auth';
 import { Task, CompletedTask, Label, TodoServiceResponse } from './types';
 import { API_URL, API_ENDPOINTS, DEFAULT_AVATAR } from './constants';
+import { getFullUrl } from '../api/config';
 
 export class TodoService {
   private static instance: TodoService;
@@ -19,6 +20,11 @@ export class TodoService {
     return TodoService.instance;
   }
 
+  // Helper method to get full URL for endpoints
+  private getEndpointUrl(endpoint: string): string {
+    return getFullUrl(endpoint);
+  }
+
   /**
    * Makes an authenticated request to the API
    */
@@ -26,18 +32,8 @@ export class TodoService {
     endpoint: string, 
     options: RequestInit = {}
   ): Promise<TodoServiceResponse<T>> {
-    const token = this.authService.getAccessToken();
-    
-    if (!token) {
-      console.error("[TODO] No access token available for authenticated request");
-      return { 
-        success: false, 
-        error: 'Authentication required' 
-      };
-    }
-
     try {
-      // Check if token needs refresh before making the request
+      // Check if we need to refresh the token
       if (this.authService.needsTokenRefresh()) {
         console.log("[TODO] Token needs refresh, attempting to refresh");
         const refreshed = await this.authService.refreshAccessToken();
@@ -54,8 +50,11 @@ export class TodoService {
       // Get the (potentially refreshed) token
       const currentToken = this.authService.getAccessToken();
       
-      // Make the request
-      const response = await fetch(`${this.API_URL}${endpoint}`, {
+      // Make the request with the full URL
+      const fullUrl = this.getEndpointUrl(endpoint);
+      console.debug(`[TODO] Making request to ${fullUrl}`);
+      
+      const response = await fetch(fullUrl, {
         ...options,
         credentials: 'include',
         headers: {
@@ -75,8 +74,8 @@ export class TodoService {
           console.log("[TODO] Token refreshed, retrying request");
           const newToken = this.authService.getAccessToken();
           
-          // Retry the request with the new token
-          const retryResponse = await fetch(`${this.API_URL}${endpoint}`, {
+          // Retry the request with the new token and full URL
+          const retryResponse = await fetch(fullUrl, {
             ...options,
             credentials: 'include',
             headers: {

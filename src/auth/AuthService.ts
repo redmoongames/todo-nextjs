@@ -1,5 +1,6 @@
 import { User } from './types';
 import { API_URL, API_ENDPOINTS } from './constants';
+import { getFullUrl } from '../api/config';
 
 export interface AuthResponse {
   success: boolean;
@@ -39,6 +40,11 @@ export class AuthService {
       AuthService.instance = new AuthService();
     }
     return AuthService.instance;
+  }
+
+  // Helper method to get full URL for endpoints
+  private getEndpointUrl(endpoint: string): string {
+    return getFullUrl(endpoint);
   }
 
   // Token management methods
@@ -176,7 +182,8 @@ export class AuthService {
   // API methods
   private async fetchWithAuth(endpoint: string, options: RequestInit = {}): Promise<AuthResponse> {
     try {
-      console.debug(`[DEBUG] Fetching ${endpoint}`, { 
+      const fullUrl = this.getEndpointUrl(endpoint);
+      console.debug(`[DEBUG] Fetching ${fullUrl}`, { 
         method: options.method || 'GET',
         hasAuthHeader: !!(options.headers && 'Authorization' in options.headers)
       });
@@ -187,7 +194,7 @@ export class AuthService {
         console.debug(`[DEBUG] Authorization header: ${authHeader.substring(0, 15)}...`);
       }
       
-      const response = await fetch(`${this.API_URL}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         ...options,
         headers: {
           'Content-Type': 'application/json',

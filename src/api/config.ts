@@ -7,42 +7,59 @@
 
 // Function to get the API URL from environment variables
 function getApiUrl(): string {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  // In browser environments, use the Next.js API proxy to avoid CORS issues
+  if (typeof window !== 'undefined') {
+    // Use the Next.js API proxy
+    return '/api';
+  }
+  
+  // For server-side rendering, use the environment variable
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
   
   if (!apiUrl) {
     throw new Error(
-      'NEXT_PUBLIC_API_URL environment variable is not set. ' +
+      'API_URL environment variable is not set. ' +
       'Please set it in your .env.local file. ' +
       'This is required for the application to communicate with the backend API.'
     );
   }
   
-  // Remove trailing slash if present
+  // Remove trailing slash if present to prevent double slashes in URLs
   return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 }
 
 // Export the API URL
 export const API_URL = getApiUrl();
 
-// Auth endpoints
+// Log the API URL for debugging
+console.debug('API URL configured as:', API_URL);
+
+// Auth endpoints - don't include the full URL, just the paths
 export const AUTH_ENDPOINTS = {
-  LOGIN: `${API_URL}/auth/login/`,
-  REGISTER: `${API_URL}/auth/register/`,
-  LOGOUT: `${API_URL}/auth/logout/`,
-  VERIFY: `${API_URL}/auth/verify/`,
-  REFRESH: `${API_URL}/auth/refresh/`,
+  LOGIN: '/auth/login/',
+  REGISTER: '/auth/register/',
+  LOGOUT: '/auth/logout/',
+  VERIFY: '/auth/verify/',
+  REFRESH: '/auth/refresh/',
 };
 
-// Todo endpoints
+// Todo endpoints - don't include the full URL, just the paths
 export const TODO_ENDPOINTS = {
-  TASKS: `${API_URL}/tasks/`,
-  TASK_BY_ID: (id: string) => `${API_URL}/tasks/${id}/`,
-  LABELS: `${API_URL}/labels/`,
-  LABEL_BY_ID: (id: string) => `${API_URL}/labels/${id}/`,
+  TASKS: '/tasks/',
+  TASK_BY_ID: (id: string) => `/tasks/${id}/`,
+  LABELS: '/labels/',
+  LABEL_BY_ID: (id: string) => `/labels/${id}/`,
 };
 
-// Health check endpoint
-export const HEALTH_ENDPOINT = `${API_URL}/health/`;
+// Health check endpoint - don't include the full URL, just the path
+export const HEALTH_ENDPOINT = '/health/';
+
+// Helper function to construct full URLs
+export function getFullUrl(path: string): string {
+  // Ensure path starts with a slash
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_URL}${normalizedPath}`;
+}
 
 // Export all endpoints in a single object for convenience
 export const API_ENDPOINTS = {
@@ -54,7 +71,7 @@ export const API_ENDPOINTS = {
 // Export a function to check API health
 export async function checkApiHealth(): Promise<boolean> {
   try {
-    const response = await fetch(HEALTH_ENDPOINT);
+    const response = await fetch(getFullUrl(HEALTH_ENDPOINT));
     return response.ok;
   } catch (error) {
     console.error('API health check failed:', error);
