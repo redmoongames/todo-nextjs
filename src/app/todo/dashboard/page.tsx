@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef, ReactElement, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-
 import { Task, CompletedTask, useTodoService } from '@/todo';
 import { useModal } from '@/modal/ModalProvider';
 import { TaskDetailsModal } from '@/modal/modals';
@@ -13,9 +11,8 @@ import { LoadingSpinner } from './_components/LoadingSpinner';
 import { ErrorDisplay } from './_components/ErrorDisplay';
 
 export default function Page(): ReactElement {
-  const router = useRouter();
   const { openModal } = useModal();
-  const { logout, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { logout } = useAuth();
   const todoService = useTodoService();
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -50,24 +47,17 @@ export default function Page(): ReactElement {
   }, [todoService, openModal]);
 
   useEffect(() => {
-    console.log('[DASHBOARD] Checking auth status...');
-    if (!authLoading && !isAuthenticated) {
-      console.log('[DASHBOARD] User not authenticated, redirecting to login');
-      router.replace('/login');
-      return;
-    }
-
-    if (!authLoading && isAuthenticated && !hasFetchedRef.current) {
-      console.log('[DASHBOARD] User authenticated, fetching tasks');
+    if (!hasFetchedRef.current) {
+      console.log('[DASHBOARD] Fetching tasks');
       fetchTasks();
       hasFetchedRef.current = true;
     }
-  }, [authLoading, isAuthenticated, router, fetchTasks]);
+  }, [fetchTasks]);
 
   const handleLogout = async () => {
     console.log('[DASHBOARD] Logging out...');
     await logout();
-    router.replace('/login');
+    // Middleware will handle the redirect to login page
   };
 
   async function handleTaskComplete(taskId: string): Promise<void> {
@@ -116,8 +106,8 @@ export default function Page(): ReactElement {
     );
   }
 
-  // Show loading state while checking auth or loading tasks
-  if (authLoading || isLoading) {
+  // Show loading state while loading tasks
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 

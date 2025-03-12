@@ -1,266 +1,236 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useEffect, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { AuthService } from '../AuthService';
-import { AuthState, AuthContextType } from '../types';
+import { AuthService } from '../utils/AuthService';
+import { IAuthContext, IUser } from '../models';
 
-// Initialize the AuthService
 const authService = AuthService.getInstance();
 
-// Create a combined context that includes both the service and state
-interface AuthContextValue extends AuthContextType {
-  authService: AuthService;
-}
+/**
+ * React context for authentication state and actions.
+ * This context is consumed by the useAuth hook.
+ */
+export const AuthContextInstance = createContext<IAuthContext | null>(null);
 
-const AuthContext = createContext<AuthContextValue | null>(null);
-
+/**
+ * Authentication Provider component that manages authentication state and provides
+ * authentication methods to the entire application.
+ * 
+ * This component:
+ * - Checks authentication status on mount and route changes
+ * - Manages authentication state (isAuthenticated, isLoading, user, error)
+ * - Provides methods for login, registration, logout, and token refresh
+ * - Handles token expiration and automatic refresh
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components that will have access to auth context
+ * 
+ * @example
+ * <AuthProvider>
+ *   <App />
+ * </AuthProvider>
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
-    user: null,
-    error: null
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<IUser | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const pathname = usePathname();
 
-  // Check authentication status on mount and when pathname changes
+  /**
+   * Effect to check authentication status on mount and when pathname changes.
+   * This ensures the auth state is always in sync with the current route.
+   */
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        setAuthState(prev => ({ ...prev, isLoading: true }));
+        setIsLoading(true);
         
-        // If we're on the login page, clear stale tokens
+        // If we're on the login page, clear tokens if they're expiring
         if (pathname.includes('/login')) {
-          console.debug("[DEBUG] On login page, checking for stale tokens");
-          authService.clearStaleTokensOnLoginPage();
+          authService.clearTokensIfExpiring();
         }
         
-        // Check if we have an access token
         const accessToken = authService.getAccessToken();
         
         if (!accessToken) {
-          console.debug("[DEBUG] No access token found");
-          setAuthState(prev => ({ 
-            ...prev, 
-            isAuthenticated: false, 
-            user: null, 
-            isLoading: false 
-          }));
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsLoading(false);
           return;
         }
         
-        console.debug("[DEBUG] Access token found, checking if refresh needed");
-        
-        // Check if token needs refresh before verifying
         if (authService.needsTokenRefresh()) {
-          console.debug("[DEBUG] Token needs refresh, attempting to refresh");
           const refreshed = await authService.refreshAccessToken();
           if (!refreshed) {
-            console.debug("[DEBUG] Token refresh failed");
-            setAuthState(prev => ({ 
-              ...prev, 
-              isAuthenticated: false, 
-              user: null, 
-              isLoading: false 
-            }));
+            setIsAuthenticated(false);
+            setUser(null);
+            setIsLoading(false);
             return;
           }
-          console.debug("[DEBUG] Token refreshed successfully");
         }
         
-        // Verify the token
-        console.debug("[DEBUG] Verifying token");
-        const isValid = await authService.verifyToken();
+        const currentUser = authService.getUser();
         
-        if (!isValid) {
-          console.debug("[DEBUG] Token verification failed");
-          setAuthState(prev => ({ 
-            ...prev, 
-            isAuthenticated: false, 
-            user: null, 
-            isLoading: false 
-          }));
-          return;
-        }
-        
-        // Get user data
-        const user = authService.getUser();
-        console.debug("[DEBUG] Token verified, user authenticated:", user?.username);
-        
-        setAuthState(prev => ({ 
-          ...prev, 
-          isAuthenticated: true, 
-          user, 
-          isLoading: false 
-        }));
+        setIsAuthenticated(true);
+        setUser(currentUser);
+        setIsLoading(false);
         
       } catch (error) {
-        console.error("[DEBUG] Auth check error:", error);
-        setAuthState(prev => ({ 
-          ...prev, 
-          isAuthenticated: false, 
-          user: null, 
-          error: error instanceof Error ? error.message : 'Authentication error',
-          isLoading: false 
-        }));
+        setIsAuthenticated(false);
+        setUser(null);
+        setError(error instanceof Error ? error.message : 'Authentication error');
+        setIsLoading(false);
       }
     };
     
     checkAuth();
   }, [pathname]);
 
+  /**
+   * Authenticates a user with username and password.
+   * 
+   * @param {string} username - The user's username
+   * @param {string} password - The user's password
+   * @returns {Promise<boolean>} True if login was successful, false otherwise
+   */
   const login = useCallback(async (username: string, password: string) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      setIsLoading(true);
+      setError(null);
       
       const response = await authService.login(username, password);
       
       if (response.success && response.data) {
-        setAuthState({
-          isAuthenticated: true,
-          user: response.data.user,
-          isLoading: false,
-          error: null
-        });
+        setIsAuthenticated(true);
+        setUser(response.data.user);
+        setIsLoading(false);
         return true;
       } else {
         throw new Error(response.error || 'Login failed');
       }
     } catch (error) {
-      setAuthState(prev => ({ 
-        ...prev, 
-        isAuthenticated: false, 
-        error: error instanceof Error ? error.message : 'Login failed',
-        isLoading: false 
-      }));
+      setIsAuthenticated(false);
+      setError(error instanceof Error ? error.message : 'Login failed');
+      setIsLoading(false);
       return false;
     }
   }, []);
 
+  /**
+   * Registers a new user with username and password.
+   * 
+   * @param {string} username - The desired username
+   * @param {string} password - The desired password
+   * @returns {Promise<boolean>} True if registration was successful, false otherwise
+   */
   const register = useCallback(async (username: string, password: string) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      setIsLoading(true);
+      setError(null);
       
       const response = await authService.register(username, password);
       
       if (response.success && response.data) {
-        setAuthState({
-          isAuthenticated: true,
-          user: response.data.user,
-          isLoading: false,
-          error: null
-        });
+        setIsAuthenticated(true);
+        setUser(response.data.user);
+        setIsLoading(false);
         return true;
       } else {
         throw new Error(response.error || 'Registration failed');
       }
     } catch (error) {
-      setAuthState(prev => ({ 
-        ...prev, 
-        isAuthenticated: false, 
-        error: error instanceof Error ? error.message : 'Registration failed',
-        isLoading: false 
-      }));
+      setIsAuthenticated(false);
+      setError(error instanceof Error ? error.message : 'Registration failed');
+      setIsLoading(false);
       return false;
     }
   }, []);
 
+  /**
+   * Logs out the current user by clearing tokens and state.
+   * 
+   * @returns {Promise<boolean>} True if logout was successful
+   */
   const logout = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
+      setIsLoading(true);
       
       await authService.logout();
       
-      setAuthState({
-        isAuthenticated: false,
-        user: null,
-        isLoading: false,
-        error: null
-      });
+      setIsAuthenticated(false);
+      setUser(null);
+      setIsLoading(false);
       
       return true;
-    } catch (error) {
-      console.error("[DEBUG] Logout error:", error);
-      
-      // Even if the API call fails, we still want to clear local state
+    } catch {
       authService.clearTokens();
       
-      setAuthState({
-        isAuthenticated: false,
-        user: null,
-        isLoading: false,
-        error: null
-      });
+      setIsAuthenticated(false);
+      setUser(null);
+      setIsLoading(false);
       
       return true;
     }
   }, []);
 
+  /**
+   * Refreshes the access token using the refresh token.
+   * 
+   * @returns {Promise<boolean>} True if token refresh was successful, false otherwise
+   */
   const refreshToken = useCallback(async () => {
     try {
       const refreshed = await authService.refreshAccessToken();
       
       if (refreshed) {
-        const user = authService.getUser();
+        const currentUser = authService.getUser();
         
-        setAuthState(prev => ({ 
-          ...prev, 
-          isAuthenticated: true, 
-          user
-        }));
+        setIsAuthenticated(true);
+        setUser(currentUser);
         
         return true;
       }
       
-      setAuthState(prev => ({ 
-        ...prev, 
-        isAuthenticated: false, 
-        user: null
-      }));
+      setIsAuthenticated(false);
+      setUser(null);
       
       return false;
     } catch (error) {
-      console.error("[DEBUG] Token refresh error:", error);
-      
-      setAuthState(prev => ({ 
-        ...prev, 
-        isAuthenticated: false, 
-        user: null,
-        error: error instanceof Error ? error.message : 'Token refresh failed'
-      }));
+      setIsAuthenticated(false);
+      setUser(null);
+      setError(error instanceof Error ? error.message : 'Token refresh failed');
       
       return false;
     }
   }, []);
 
+  /**
+   * Returns the current access token.
+   * 
+   * @returns {string|null} The access token or null if not authenticated
+   */
   const getAccessToken = useCallback(() => {
     return authService.getAccessToken();
   }, []);
 
-  // Combine the auth state and service into a single context value
-  const value: AuthContextValue = {
-    ...authState,
+  const contextValue: IAuthContext = {
+    isAuthenticated,
+    isLoading,
+    user,
+    error,
     login,
     register,
     logout,
     refreshToken,
-    getAccessToken,
-    authService
+    getAccessToken
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContextInstance.Provider value={contextValue}>
       {children}
-    </AuthContext.Provider>
+    </AuthContextInstance.Provider>
   );
-}
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 } 

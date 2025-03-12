@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuth } from '@/auth';
 import { FormRegister } from './_components/FormRegister';
 import { FormLogin } from './_components/FormLogin';
@@ -9,16 +8,7 @@ import { LoginOrRegisterButton } from './_components/LoginOrRegisterButton';
 
 export default function Page() {
   const [isRegistering, setIsRegistering] = useState(false);
-  const { login, register, isLoading, error, isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  // Redirect to dashboard if already authenticated
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      console.log('[LOGIN PAGE] User is already authenticated, redirecting to dashboard');
-      router.replace('/todo/dashboard');
-    }
-  }, [isLoading, isAuthenticated, router]);
+  const { login, register, isLoading, error } = useAuth();
 
   const handleSubmit = async (username: string, password: string) => {
     try {
@@ -32,12 +22,8 @@ export default function Page() {
       }
       
       if (success) {
-        console.log('[LOGIN PAGE] Authentication successful, redirecting...');
-        
-        // Add a small delay to ensure tokens are saved before redirecting
-        setTimeout(() => {
-          router.replace('/todo/dashboard');
-        }, 100);
+        console.log('[LOGIN PAGE] Authentication successful');
+        // Middleware will handle the redirect
       } else {
         console.log('[LOGIN PAGE] Authentication failed');
       }
@@ -64,7 +50,7 @@ export default function Page() {
     );
   }
 
-  // Only show the login form if not authenticated
+  // Show the login form (middleware will redirect if already authenticated)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
       <div className="max-w-md w-full space-y-8 p-8 bg-gray-800 rounded-xl shadow-2xl">

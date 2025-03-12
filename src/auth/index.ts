@@ -1,15 +1,20 @@
+// Export models
+export * from './models';
+
 // Export components
-export { AuthProvider, useAuth } from './components/AuthProvider';
-export { AuthWrapper } from './components/AuthWrapper';
+export { AuthProvider } from './components/AuthProvider';
+export { default as AuthWrapper } from './components/AuthWrapper';
 
 // Export services
-export { AuthService } from './AuthService';
+export { AuthService } from './utils/AuthService';
+export { TokenService } from './utils/TokenService';
+export { ApiService } from './utils/ApiService';
+
+// Export utils
+export * from './utils';
 
 // Export hooks
-export { useAuthService } from './hooks';
-
-// Export types
-export * from './types';
+export { useAuth } from './hooks/useAuth';
 
 // Export constants
 export * from './constants'; 

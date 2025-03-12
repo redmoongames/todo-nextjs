@@ -1,56 +1,69 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from './AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 
+/**
+ * Props for the AuthWrapper component
+ */
 interface AuthWrapperProps {
+  /** Child components to render when authentication is complete */
   children: React.ReactNode;
-  isProtectContent?: boolean;
+  /** Message to display while authentication is being checked */
   loadingMessage?: string;
+  /** Optional callback function to execute when authentication is successful */
   onAuthSuccess?: () => void;
+  /** Whether to protect the content and only show it to authenticated users */
+  isProtectContent?: boolean;
+  /** Optional callback function to execute when authentication fails */
   onAuthFail?: () => void;
 }
 
-export function AuthWrapper({ 
+/**
+ * A wrapper component that handles authentication state and loading.
+ * 
+ * This component:
+ * - Shows a loading spinner while authentication state is being determined
+ * - Executes a callback when authentication is successful
+ * - Executes a callback when authentication fails (if isProtectContent is true)
+ * - Renders children only when authentication check is complete
+ * 
+ * @param {AuthWrapperProps} props - Component props
+ * @returns {JSX.Element} The rendered component
+ * 
+ * @example
+ * <AuthWrapper
+ *   loadingMessage="Checking authentication..."
+ *   onAuthSuccess={() => console.log('User is authenticated')}
+ *   isProtectContent={true}
+ *   onAuthFail={() => router.push('/login')}
+ * >
+ *   <ProtectedContent />
+ * </AuthWrapper>
+ */
+const AuthWrapper = ({ 
   children, 
-  isProtectContent = true,
-  loadingMessage = 'Loading...',
+  loadingMessage = 'Loading...', 
   onAuthSuccess,
+  isProtectContent = false,
   onAuthFail
-}: AuthWrapperProps) {
+}: AuthWrapperProps) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isChecking, setIsChecking] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      console.log('[AUTH WRAPPER] Path:', pathname);
-      console.log('[AUTH WRAPPER] Is authenticated:', isAuthenticated);
-      console.log('[AUTH WRAPPER] Is protected content:', isProtectContent);
-
-      // Only handle redirects for protected content
-      // Let the middleware handle auth page redirects
-      if (isProtectContent && !isAuthenticated) {
-        console.log('[AUTH WRAPPER] Unauthenticated user accessing protected content');
-        // Redirect to login if not authenticated and content is protected
-        if (onAuthFail) {
-          onAuthFail();
-        } else {
-          router.push('/login');
-        }
-      } else if (isAuthenticated && onAuthSuccess && isProtectContent) {
-        console.log('[AUTH WRAPPER] Authenticated user accessing protected content');
-        // Call success callback if authenticated and content is protected
-        onAuthSuccess();
-      }
-      setIsChecking(false);
+    if (isLoading) return;
+    
+    if (isAuthenticated && onAuthSuccess) {
+      onAuthSuccess();
+    } else if (!isAuthenticated && isProtectContent && onAuthFail) {
+      onAuthFail();
     }
-  }, [isLoading, isAuthenticated, isProtectContent, router, onAuthSuccess, onAuthFail, pathname]);
+    
+    setIsReady(true);
+  }, [isLoading, isAuthenticated, onAuthSuccess, isProtectContent, onAuthFail]);
 
-  if (isLoading || isChecking) {
-    console.log('[AUTH WRAPPER] Loading or checking auth state');
+  if (isLoading || !isReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -62,12 +75,11 @@ export function AuthWrapper({
   }
 
   // If content is protected and user is not authenticated, don't render children
-  // (this is a fallback in case the redirect hasn't happened yet)
   if (isProtectContent && !isAuthenticated) {
-    console.log('[AUTH WRAPPER] Not rendering protected content for unauthenticated user');
     return null;
   }
 
-  console.log('[AUTH WRAPPER] Rendering content');
   return <>{children}</>;
-} 
+};
+
+export default AuthWrapper; 

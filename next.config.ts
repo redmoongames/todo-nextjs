@@ -7,14 +7,14 @@ const nextConfig: NextConfig = {
   },
   // Explicitly expose environment variables to the browser
   env: {
-    API_URL: process.env.API_URL,
+    API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
   // Add rewrites for API requests to handle CORS issues
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.API_URL}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
       },
     ];
   },

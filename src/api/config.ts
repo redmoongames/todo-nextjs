@@ -14,12 +14,11 @@ function getApiUrl(): string {
   }
   
   // For server-side rendering, use the environment variable
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   
   if (!apiUrl) {
     throw new Error(
-      'API_URL environment variable is not set. ' +
-      'Please set it in your .env.local file. ' +
+      'NEXT_PUBLIC_API_URL environment variable is not defined. ' +
       'This is required for the application to communicate with the backend API.'
     );
   }
