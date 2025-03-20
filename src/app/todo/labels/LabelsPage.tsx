@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { PriorityLabelsSection } from './PriorityLabelsSection';
 import { CustomLabelsSection } from './CustomLabelsSection';
 import { Label } from './types/Label';
-import { AuthWrapper } from '@/auth';
+import { AuthWrapper } from '@/shared/auth/auth-context';
 
 const PRIORITY_LABELS: Label[] = [
   { id: 'high', name: 'High Priority', color: 'bg-red-500', tasksCount: 3 },
