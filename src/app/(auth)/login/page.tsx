@@ -1,77 +1,55 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/shared/auth/auth-context';
-import { PageBackground } from '@/shared/components/ui/PageBackground';
-import { LoginForm } from './_components/LoginForm';
-
-interface LoginCredentials {
-  username: string;
-  password: string;
-  rememberMe: boolean;
-}
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { LoginForm } from '@/features/auth/components/LoginForm';
+import { useLogin } from '@/features/auth/hooks/useLogin';
+import { useAuthState } from '@/features/auth/hooks/useAuthState';
 
 export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  const { isAuthenticated, isLoading } = useAuthState();
+  const { login, error, isSubmitting } = useLogin();
 
-  // Redirect to dashboard if already authenticated
+  // Handle automatic redirect if already logged in
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/todo/dashboard');
+    if (!isLoading && isAuthenticated && !isRedirecting) {
+      setIsRedirecting(true);
+      router.replace(callbackUrl);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router, callbackUrl, isRedirecting]);
 
-  // Handle login submission
-  const handleLogin = async (credentials: LoginCredentials) => {
-    const { username, password, rememberMe } = credentials;
-
-    if (!username || !password) {
-      setError('Username or email and password are required');
-      return;
-    }
-
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      console.log('[LOGIN] Submitting login data with username:', username);
-      const result = await login(username, password);
-      console.log('[LOGIN] Login result:', result);
-      
-      if (!result.success && result.message) {
-        // This is a validation error from the server
-        setError(result.message);
-        return;
-      }
-      
-      // On success, redirect to dashboard
-      if (result.success) {
-        router.push('/todo/dashboard');
-      }
-    } catch (err) {
-      console.error('[LOGIN] Login error:', err);
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  // Handle login form submission
+  const handleLogin = async (credentials: { username: string; password: string; rememberMe: boolean }) => {
+    if (isRedirecting) return;
+    
+    const result = await login(credentials);
+    if (result.success) {
+      console.log("Login success, redirecting to:", callbackUrl);
+      setIsRedirecting(true);
+      router.replace(callbackUrl);
     }
   };
 
-  // Show loading state while checking authentication
-  if (isAuthenticated) {
-    return null;
+  // Prevent showing the form while redirecting
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center p-4">
+        <p className="text-center text-gray-500 mb-2">Login successful</p>
+        <p className="text-center text-gray-500">Redirecting...</p>
+      </div>
+    );
   }
 
   return (
-    <PageBackground style="glass">
-      <LoginForm
-        onSubmit={handleLogin}
-        error={error}
-        isSubmitting={isSubmitting}
-      />
-    </PageBackground>
+    <LoginForm
+      onSubmit={handleLogin}
+      error={error}
+      isSubmitting={isSubmitting || isRedirecting}
+    />
   );
 } 

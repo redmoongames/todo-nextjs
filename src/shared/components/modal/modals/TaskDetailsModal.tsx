@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useModal } from '../ModalProvider';
-import { Task } from '@/shared/todo/types';
+import { Task } from '@/features/todo/types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface TaskDetailsModalProps {
@@ -16,15 +16,32 @@ export function TaskDetailsModal({ task, onComplete, onDelete }: TaskDetailsModa
   
   const handleComplete = async () => {
     if (onComplete) {
-      await onComplete(task.id);
+      await onComplete(String(task.id));
       closeModal();
     }
   };
   
   const handleDelete = async () => {
     if (onDelete) {
-      await onDelete(task.id);
+      await onDelete(String(task.id));
       closeModal();
+    }
+  };
+  
+  // Helper to determine priority class
+  const getPriorityClass = (priority: number): string => {
+    switch (priority) {
+      case 1:
+        return 'bg-red-500/20 text-red-300';
+      case 2:
+        return 'bg-yellow-500/20 text-yellow-300';
+      case 3:
+        return 'bg-blue-500/20 text-blue-300';
+      case 4:
+        return 'bg-green-500/20 text-green-300';
+      case 5:
+      default:
+        return 'bg-gray-500/20 text-gray-300';
     }
   };
   
@@ -49,11 +66,7 @@ export function TaskDetailsModal({ task, onComplete, onDelete }: TaskDetailsModa
       <div className="mb-4">
         <div className="flex items-center text-sm text-gray-400">
           <span className="mr-2">Priority:</span>
-          <span className={`px-2 py-1 rounded text-xs ${
-            task.priority === 'high' ? 'bg-red-500/20 text-red-300' :
-            task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-            'bg-blue-500/20 text-blue-300'
-          }`}>
+          <span className={getPriorityClass(task.priority)}>
             {task.priority || 'Low'}
           </span>
         </div>
@@ -83,7 +96,7 @@ export function TaskDetailsModal({ task, onComplete, onDelete }: TaskDetailsModa
       </div>
       
       <div className="flex justify-end space-x-3 mt-6">
-        {!task.completed && onComplete && (
+        {task.status !== 'completed' && onComplete && (
           <button
             onClick={handleComplete}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"

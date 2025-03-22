@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proxyRequest } from '../../../proxy-utils';
+import { proxyRequest } from '../../../ProxyUtils';
 
 interface Params {
   params: {

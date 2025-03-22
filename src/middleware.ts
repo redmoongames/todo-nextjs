@@ -1,6 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Middleware is disabled because we're now using client-side session authentication
+// Middleware is disabled because we're now using client-side authentication only
 export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }

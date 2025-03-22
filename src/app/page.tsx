@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/shared/auth/auth-context';
+import { useAuthState } from '@/features/auth';
 
 function LoadingSpinner() {
   return (
@@ -17,12 +17,12 @@ function LoadingSpinner() {
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthState();
 
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        router.push('/todo/dashboard');
+        router.push('/dashboard');
       } else {
         router.push('/login');
       }
