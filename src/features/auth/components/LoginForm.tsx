@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { InputPasswordField } from './InputPasswordField';
-import { GradientButton } from '@/shared/components/ui/GradientButton';
-import { Divider } from '@/shared/components/ui/Divider';
+import { GradientButton } from '@/common-ui/GradientButton';
+import { Divider } from '@/common-ui/Divider';
 import { ErrorMessage } from './ErrorMessage';
 
 interface LoginFormProps {

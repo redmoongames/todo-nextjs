@@ -5,7 +5,28 @@ import {
   RegisterData 
 } from '../types';
 import { sessionService } from './SessionService';
-import { httpService } from '@/shared/http';
+import { httpService } from '@/common/http';
+
+// Define interfaces for API responses
+interface LoginResponse {
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
+}
+
+interface RegisterResponse {
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+}
 
 export class AuthenticationService implements IAuthenticationService {
   private static instance: AuthenticationService;
@@ -30,7 +51,7 @@ export class AuthenticationService implements IAuthenticationService {
     try {
       const payload = this.prepareLoginPayload(credentials);
       
-      const response = await httpService.post<any>('/auth/login', payload);
+      const response = await httpService.post<LoginResponse>('/auth/login', payload);
       
       if (!response.success) {
         return {
@@ -87,7 +108,7 @@ export class AuthenticationService implements IAuthenticationService {
     try {
       const requestData = this.prepareRegistrationData(data);
       
-      const response = await httpService.post<any>('/auth/register', requestData);
+      const response = await httpService.post<RegisterResponse>('/auth/register', requestData);
       
       if (!response.success) {
         return {

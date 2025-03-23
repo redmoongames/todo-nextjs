@@ -1,4 +1,4 @@
-import { PageBackground } from '@/shared/components/ui/PageBackground';
+import { PageBackground } from '@/common-ui/PageBackground';
 
 interface AuthLayoutProps {
   children: React.ReactNode;

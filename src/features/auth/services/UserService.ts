@@ -1,5 +1,5 @@
 import { IUserService, User } from '../types';
-import { httpService } from '@/shared/http';
+import { httpService } from '@/common/http';
 import { sessionService } from './SessionService';
 
 export class UserService implements IUserService {
@@ -52,16 +52,7 @@ export class UserService implements IUserService {
   }
   
   public async deleteAccount(userId: string, password: string): Promise<boolean> {
-    const data = {
-      password,
-      confirmation: true
-    };
-    
-    const response = await httpService.delete<{ success: boolean }>(`/auth/users/${userId}`, {
-      headers: {
-        'X-Confirm-Delete': 'true'
-      }
-    });
+    const response = await httpService.delete<{ success: boolean }>(`/auth/users/${userId}?password=${encodeURIComponent(password)}&confirmation=true`);
     
     if (response.success) {
       sessionService.clearSession();

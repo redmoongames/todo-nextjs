@@ -1,5 +1,5 @@
 import { ISessionService, User } from '../types';
-import { httpService } from '@/shared/http';
+import { httpService } from '@/common/http';
 
 export class SessionService implements ISessionService {
   private static instance: SessionService;

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useAuth } from '../AuthProvider';
-import { LoadingSpinner } from '@/shared/components/ui/LoadingSpinner';
+import { LoadingSpinner } from '@/common-ui/LoadingSpinner';
 
 interface AuthWrapperProps {
   children: React.ReactNode;

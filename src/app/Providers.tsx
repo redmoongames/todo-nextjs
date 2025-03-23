@@ -2,9 +2,9 @@
 
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/features/auth/AuthProvider';
-import { TodoProvider } from '@/features/todo';
-import { ModalProvider, Modal } from '@/shared/components/modal';
-import { ErrorBoundary } from '@/shared/components/error-boundary';
+import { TodoProvider } from '@/features/todo-planner';
+import { ModalProvider, Modal } from '@/features/modal';
+import { ErrorBoundary } from '@/common-ui/error-boundary';
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (

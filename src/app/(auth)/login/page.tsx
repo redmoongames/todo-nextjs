@@ -1,17 +1,18 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useAuthState } from '@/features/auth/hooks/useAuthState';
 
-export default function LoginPage() {
+// Separate component to handle search params
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+
   const { isAuthenticated, isLoading } = useAuthState();
   const { login, error, isSubmitting } = useLogin();
 
@@ -26,10 +27,9 @@ export default function LoginPage() {
   // Handle login form submission
   const handleLogin = async (credentials: { username: string; password: string; rememberMe: boolean }) => {
     if (isRedirecting) return;
-    
+
     const result = await login(credentials);
     if (result.success) {
-      console.log("Login success, redirecting to:", callbackUrl);
       setIsRedirecting(true);
       router.replace(callbackUrl);
     }
@@ -51,5 +51,13 @@ export default function LoginPage() {
       error={error}
       isSubmitting={isSubmitting || isRedirecting}
     />
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-4">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 } 
