@@ -32,7 +32,11 @@ export function AddTaskPopup({ dashboardId, onClose, onSuccess }: AddTaskPopupPr
         priority
       };
 
-      const result = await createTodo(todoData, dashboardId);
+      if (!dashboardId) {
+        throw new Error("Dashboard ID is required");
+      }
+
+      const result = await createTodo(todoData);
       
       if (result.success) {
         onSuccess?.();
