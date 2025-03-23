@@ -9,7 +9,6 @@ import { LoadingSpinner } from '@/common-ui/LoadingSpinner';
 import { ErrorMessage } from '@/features/auth/components/ErrorMessage';
 import { CreateDashboardPopup } from '@/common-ui/popups';
 import { DashboardList } from './_components/DashboardList';
-import { DashboardWithStats } from './_components/DashboardCard';
 
 export default function DashboardPage(): React.ReactElement {
   const { openModal, closeModal } = useModal();

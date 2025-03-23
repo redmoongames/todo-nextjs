@@ -11,6 +11,12 @@ import {
 } from '../types/index';
 import { httpService } from '@/common/http';
 
+interface TodoResponse {
+  todos?: Todo[];
+  todo?: Todo;
+  [key: string]: unknown;
+}
+
 export class TodoService implements ITodoService {
   private static instance: TodoService;
   
@@ -39,7 +45,7 @@ export class TodoService implements ITodoService {
         }
       }
       
-      const response = await httpService.get<any>(endpoint);
+      const response = await httpService.get<TodoResponse>(endpoint);
       
       if (!response.success) {
         return {
@@ -226,7 +232,7 @@ export class TodoService implements ITodoService {
       
       const endpoint = `/api/todo/dashboards/${dashboardId}/search?${queryParams.toString()}`;
       
-      const response = await httpService.get<any>(endpoint);
+      const response = await httpService.get<TodoResponse>(endpoint);
       
       if (!response.success) {
         return {

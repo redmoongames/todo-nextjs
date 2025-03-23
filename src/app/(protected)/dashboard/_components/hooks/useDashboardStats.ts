@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dashboard } from '@/features/todo-planner';
 import { todoService } from '@/features/todo-planner/services/TodoService';
 import { DashboardWithStats } from '../DashboardCard';
@@ -13,7 +13,7 @@ export function useDashboardStats(dashboards: Dashboard[] | DashboardWithStats[]
   const dashboardsRef = useRef<Dashboard[] | DashboardWithStats[]>([]);
   
   // Compare dashboards to detect changes
-  const hasNewDashboards = (): boolean => {
+  const hasNewDashboards = useCallback((): boolean => {
     if (dashboardsRef.current.length !== dashboards.length) {
       return true;
     }
@@ -23,7 +23,7 @@ export function useDashboardStats(dashboards: Dashboard[] | DashboardWithStats[]
     const prevIds = new Set(dashboardsRef.current.map(d => d.id));
     
     return Array.from(currentIds).some(id => !prevIds.has(id));
-  };
+  }, [dashboards]);
   
   useEffect(() => {
     // Skip if dashboards array is empty
@@ -98,6 +98,9 @@ export function useDashboardStats(dashboards: Dashboard[] | DashboardWithStats[]
               previousDataRef.current[dashboard.id] = dashboardWithStats;
               return dashboardWithStats;
             } catch (error) {
+              // Log error silently using a void expression
+              void error;
+              
               // Initialize with empty stats on error
               const dashboardWithEmptyStats = {
                 ...dashboard,
@@ -152,7 +155,7 @@ export function useDashboardStats(dashboards: Dashboard[] | DashboardWithStats[]
     };
     
     fetchTaskStats();
-  }, [dashboards]);
+  }, [dashboards, hasNewDashboards]);
 
   return { dashboardsWithStats, isLoading };
 } 

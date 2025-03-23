@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LoadingSpinner } from '@/common-ui/LoadingSpinner';
 import { ErrorMessage } from '@/features/auth/components/ErrorMessage';
 import { Dashboard, Todo } from '@/features/todo-planner';
@@ -11,30 +10,6 @@ import { DashboardAddTaskPopup } from '@/common-ui/popups';
 import { useModal } from '@/features/modal';
 import Link from 'next/link';
 
-// Simple Modal component
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-function Modal({ isOpen, onClose, children }: ModalProps) {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div 
-        className="z-50 w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 interface DashboardDetailPageProps {
   params: Promise<{
     id: string;
@@ -42,7 +17,6 @@ interface DashboardDetailPageProps {
 }
 
 export default function DashboardDetailPage({ params }: DashboardDetailPageProps): React.ReactElement {
-  const router = useRouter();
   const { id: dashboardId } = React.use(params);
   const { openModal, closeModal } = useModal();
   
@@ -52,7 +26,7 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
   const [todos, setTodos] = useState<Todo[]>([]);
   const [permissionDenied, setPermissionDenied] = useState<boolean>(false);
 
-  async function fetchDashboardAndTodos(): Promise<void> {
+  const fetchDashboardAndTodos = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -90,11 +64,11 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [dashboardId]);
 
   useEffect(() => {
     fetchDashboardAndTodos();
-  }, [dashboardId]);
+  }, [dashboardId, fetchDashboardAndTodos]);
 
   const handleAddTask = () => {
     openModal(

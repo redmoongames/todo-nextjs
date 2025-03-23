@@ -94,7 +94,7 @@ export async function proxyRequest(
         const apiUrlObj = new URL(API_URL);
         headers.set('Origin', apiUrlObj.origin);
         headers.set('Referer', API_URL);
-      } catch (e) {
+      } catch {
         // Continue without setting Origin header
       }
     }

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useTodo, PRIORITY_OPTIONS, CreateTodoInput, TaskPriority } from '@/features/todo-planner';
+import { PRIORITY_OPTIONS, CreateTodoInput, TaskPriority } from '@/features/todo-planner';
 import { Button } from '@/common-ui/Button/Button';
 import { Input } from '@/common-ui/Input';
 import { TextArea } from '@/common-ui/TextArea';
