@@ -8,8 +8,8 @@ import { dashboardService } from '@/features/todo-planner/services/DashboardServ
 import { LoadingSpinner } from '@/common-ui/LoadingSpinner';
 import { ErrorMessage } from '@/features/auth/components/ErrorMessage';
 import { CreateDashboardPopup } from '@/common-ui/popups';
-
 import { DashboardList } from './_components/DashboardList';
+import { DashboardWithStats } from './_components/DashboardCard';
 
 export default function DashboardPage(): React.ReactElement {
   const { openModal, closeModal } = useModal();
@@ -53,10 +53,10 @@ export default function DashboardPage(): React.ReactElement {
         throw new Error(result.error || 'Failed to create dashboard');
       }
       
-      if (result.dashboard) {
-        setDashboards((prev: Dashboard[]): Dashboard[] => [...prev, result.dashboard as Dashboard]);
-        closeModal();
-      }
+      // On successful creation, refresh the entire dashboard list
+      // This ensures we get proper formatted data from the server
+      await fetchDashboards();
+      closeModal();
     } catch (error: unknown) {
       const errorMessage: string = error instanceof Error ? error.message : 'Failed to create dashboard. Please try again.';
       openModal(
@@ -74,6 +74,7 @@ export default function DashboardPage(): React.ReactElement {
         throw new Error(result.error || 'Failed to delete dashboard');
       }
       
+      // Update the local state to reflect the deletion
       setDashboards((prev: Dashboard[]): Dashboard[] => 
         prev.filter((dashboard: Dashboard): boolean => dashboard.id !== dashboardId)
       );
@@ -91,38 +92,46 @@ export default function DashboardPage(): React.ReactElement {
     openModal(<CreateDashboardPopup onSubmit={handleCreateDashboard} onCancel={closeModal} />);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner size="large" text="Loading..." />;
+  if (isLoading && dashboards.length === 0) {
+    return <LoadingSpinner size="large" text="Loading dashboards..." />;
   }
 
-  if (error) {
+  if (error && dashboards.length === 0) {
     return <ErrorMessage error={error} />;
   }
 
-  
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-100">My Dashboards</h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={openCreateDashboardModal}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Create Dashboard
-          </button>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Logout
-          </button>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">My Dashboards</h1>
+            <p className="mt-2 text-gray-400 max-w-2xl">
+              Organize your tasks and boost productivity with custom dashboards.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={openCreateDashboardModal}
+              className="px-4 py-2 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors duration-200"
+            >
+              New Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 border border-gray-700 text-gray-300 font-medium rounded-md hover:bg-gray-900 hover:border-gray-600 transition-colors duration-200"
+            >
+              Logout
+            </button>
+          </div>
         </div>
+        
+        <DashboardList 
+          dashboards={dashboards} 
+          onDelete={handleDeleteDashboard}
+          isLoading={isLoading}
+        />
       </div>
-      <DashboardList 
-        dashboards={dashboards} 
-        onDelete={handleDeleteDashboard}
-      />
     </div>
   );
 }

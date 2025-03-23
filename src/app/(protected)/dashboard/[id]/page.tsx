@@ -116,14 +116,14 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
   if (permissionDenied) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md">
-          <h2 className="text-2xl font-bold text-red-300 mb-4">Access Denied</h2>
-          <p className="text-red-200 mb-6">
+        <div className="bg-black border border-red-800 rounded-lg p-6 max-w-md">
+          <h2 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h2>
+          <p className="text-gray-400 mb-6">
             This dashboard is locked. You need permission from the dashboard owner to view it.
           </p>
           <Link 
             href="/dashboard" 
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-block px-4 py-2 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors duration-200"
           >
             Return to My Dashboards
           </Link>
@@ -136,87 +136,131 @@ export default function DashboardDetailPage({ params }: DashboardDetailPageProps
     return <ErrorMessage error={error} />;
   }
 
+  const completedTodos = todos.filter(todo => todo.status === 'completed');
+  const completionPercentage = todos.length > 0 
+    ? Math.round((completedTodos.length / todos.length) * 100) 
+    : 0;
+
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <Link 
-          href="/dashboard" 
-          className="text-blue-400 hover:text-blue-300 mb-4 inline-block"
-        >
-          &larr; Back to My Dashboards
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-100 mt-2">{dashboard?.title}</h1>
-        {dashboard?.description && (
-          <p className="text-gray-300 mt-2">{dashboard.description}</p>
-        )}
-      </div>
-      
-      <div className="bg-gray-800 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-100">Tasks</h2>
-          <button
-            onClick={handleAddTask}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-8">
+          <Link 
+            href="/dashboard" 
+            className="text-gray-400 hover:text-white transition-colors duration-200 flex items-center gap-1 mb-6"
           >
-            Add New Task
-          </button>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 12.5L4.5 8L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Back to Dashboards
+          </Link>
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">{dashboard?.title}</h1>
+              {dashboard?.description && (
+                <p className="mt-2 text-gray-400 max-w-2xl">{dashboard.description}</p>
+              )}
+            </div>
+            
+            <button
+              onClick={handleAddTask}
+              className="px-4 py-2 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors duration-200 whitespace-nowrap"
+            >
+              Add New Task
+            </button>
+          </div>
+          
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-gray-800 rounded-lg p-6 bg-gradient-to-b from-gray-900 to-black">
+              <div className="text-sm text-gray-500 mb-1">Total Tasks</div>
+              <div className="text-3xl font-bold">{todos.length}</div>
+            </div>
+            
+            <div className="border border-gray-800 rounded-lg p-6 bg-gradient-to-b from-gray-900 to-black">
+              <div className="text-sm text-gray-500 mb-1">Completed</div>
+              <div className="text-3xl font-bold text-green-400">{completedTodos.length}</div>
+            </div>
+            
+            <div className="border border-gray-800 rounded-lg p-6 bg-gradient-to-b from-gray-900 to-black">
+              <div className="text-sm text-gray-500 mb-1">Completion</div>
+              <div className="text-3xl font-bold">{completionPercentage}%</div>
+              <div className="mt-2 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-green-500 to-green-400"
+                  style={{ width: `${completionPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {todos.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
-            <p>No tasks found in this dashboard.</p>
-            <p className="mt-2">Start by adding a new task.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {Array.isArray(todos) ? todos.map((todo) => (
-              <div 
-                key={todo.id} 
-                className="bg-gray-700 rounded-lg p-4 flex items-center justify-between"
-              >
-                <div>
-                  <h3 className="font-medium text-gray-100">
-                    {todo.title}
-                  </h3>
-                  {todo.description && (
-                    <p className="text-gray-300 text-sm mt-1">{todo.description}</p>
-                  )}
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {Array.isArray(todo.tags) && todo.tags.map((tag) => (
-                      <span 
-                        key={tag.id}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                        style={{
-                          backgroundColor: tag.color ? `${tag.color}40` : '#9CA3AF40',
-                          color: tag.color || '#9CA3AF'
-                        }}
-                      >
-                        {tag.name}
+        <div className="border border-gray-800 rounded-lg bg-gradient-to-b from-gray-900 to-black p-6">
+          <h2 className="text-xl font-semibold mb-6">Tasks</h2>
+          
+          {todos.length === 0 ? (
+            <div className="text-center py-16">
+              <svg className="w-16 h-16 mx-auto text-gray-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p className="text-gray-400 mb-2">No tasks found in this dashboard.</p>
+              <p className="text-gray-600">Start by adding a new task.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Array.isArray(todos) ? todos.map((todo) => (
+                <div 
+                  key={todo.id} 
+                  className="border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-all duration-300"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="font-medium text-lg text-white">
+                        {todo.title}
+                      </h3>
+                      {todo.description && (
+                        <p className="text-gray-400 text-sm mt-1">{todo.description}</p>
+                      )}
+                      {Array.isArray(todo.tags) && todo.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {todo.tags.map((tag) => (
+                            <span 
+                              key={tag.id}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                              style={{
+                                backgroundColor: tag.color ? `${tag.color}20` : '#9CA3AF20',
+                                color: tag.color || '#9CA3AF'
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-3 shrink-0">
+                      <span className={`px-3 py-1 rounded-md text-xs font-medium ${
+                        todo.status === 'completed' 
+                          ? 'bg-green-900/20 text-green-400 border border-green-900/50' 
+                          : 'bg-yellow-900/20 text-yellow-400 border border-yellow-900/50'
+                      }`}>
+                        {todo.status === 'completed' ? 'Completed' : 'Pending'}
                       </span>
-                    ))}
+                      <span className="px-3 py-1 bg-gray-800 rounded-md text-xs font-medium border border-gray-700">
+                        P{todo.priority}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                    todo.status === 'completed' 
-                      ? 'bg-green-900/30 text-green-300' 
-                      : 'bg-yellow-900/30 text-yellow-300'
-                  }`}>
-                    {todo.status === 'completed' ? 'Completed' : 'Pending'}
-                  </span>
-                  <span className="px-2 py-1 bg-gray-600 rounded-md text-xs font-medium">
-                    Priority: {todo.priority}
-                  </span>
+              )) : (
+                <div className="text-center py-10 text-gray-400">
+                  <p>Error loading tasks.</p>
+                  <p className="mt-2">Please refresh the page to try again.</p>
                 </div>
-              </div>
-            )) : (
-              <div className="text-center py-10 text-gray-400">
-                <p>Error loading tasks.</p>
-                <p className="mt-2">Please refresh the page to try again.</p>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

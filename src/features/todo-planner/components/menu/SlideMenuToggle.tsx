@@ -22,7 +22,7 @@ export function SlideMenuToggle({ isMenuOpen, onToggle }: SlideMenuToggleProps) 
           }
         }}
         onClick={onToggle}
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-black text-white border border-gray-800 hover:border-gray-700 transition-colors shadow-md"
         aria-label="Toggle menu"
       >
         <svg
@@ -51,7 +51,7 @@ export function SlideMenuToggle({ isMenuOpen, onToggle }: SlideMenuToggleProps) 
           }
         }}
         onClick={onToggle}
-        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+        className="fixed top-4 right-4 z-50 p-2 rounded-md bg-black text-white border border-gray-800 hover:border-gray-700 transition-colors shadow-md"
         aria-label="Close menu"
       >
         <svg

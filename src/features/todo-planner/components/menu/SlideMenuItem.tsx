@@ -49,11 +49,11 @@ export function SlideMenuItem({
       onClick={handleClick}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
         isActive 
-          ? 'bg-indigo-600/20 text-indigo-300' 
-          : 'text-gray-300 hover:bg-gray-700/50'
+          ? 'bg-white/10 text-white border border-gray-800' 
+          : 'text-gray-400 hover:bg-gray-900 hover:text-white'
       }`}
     >
-      <div className={`text-xl ${isActive ? 'text-indigo-400' : 'text-gray-400'}`}>
+      <div className={`text-xl ${isActive ? 'text-white' : 'text-gray-500'}`}>
         {icon}
       </div>
       <span className="font-medium">{label}</span>

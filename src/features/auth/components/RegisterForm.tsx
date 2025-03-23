@@ -129,7 +129,7 @@ export function RegisterForm({ onSubmit, error, isSubmitting }: RegisterFormProp
       <Divider text="Already have an account?" />
 
       <div className="text-center">
-        <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+        <Link href="/login" className="text-gray-200 hover:text-white font-medium transition-colors">
           Sign in
         </Link>
       </div>

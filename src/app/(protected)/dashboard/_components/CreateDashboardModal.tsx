@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CreateDashboardData } from '@/features/todo-planner';
+import { useCreateDashboard } from './hooks/useCreateDashboard';
 
 interface CreateDashboardModalProps {
   onSubmit: (data: CreateDashboardData) => Promise<void>;
@@ -9,51 +10,31 @@ interface CreateDashboardModalProps {
 }
 
 export function CreateDashboardModal({ onSubmit, onCancel }: CreateDashboardModalProps): React.ReactElement {
-  const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [isPublic, setIsPublic] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-    
-    setError(null);
-    setIsSubmitting(true);
-    
-    try {
-      const dashboardData: CreateDashboardData = {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        is_public: isPublic
-      };
-      
-      await onSubmit(dashboardData);
-    } catch {
-      setError('Failed to create dashboard. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    title,
+    setTitle,
+    description,
+    setDescription,
+    isPublic,
+    setIsPublic,
+    isSubmitting,
+    error,
+    handleSubmit
+  } = useCreateDashboard(onSubmit);
 
   return (
     <div className="p-6 max-w-md w-full mx-auto">
-      <h2 className="text-2xl font-bold text-gray-100 mb-6">Create New Dashboard</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Create New Dashboard</h2>
       
       <form onSubmit={handleSubmit}>
         {error && (
-          <div className="mb-4 p-3 bg-red-900/50 border border-red-800 rounded-md text-red-300 text-sm">
+          <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-md text-red-300 text-sm">
             {error}
           </div>
         )}
         
         <div className="mb-4">
-          <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="title" className="block text-sm font-medium text-gray-200 mb-1">
             Title
           </label>
           <input
@@ -61,21 +42,21 @@ export function CreateDashboardModal({ onSubmit, onCancel }: CreateDashboardModa
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100"
+            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 text-white"
             placeholder="Dashboard title"
             disabled={isSubmitting}
           />
         </div>
         
         <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-200 mb-1">
             Description
           </label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 min-h-[100px]"
+            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 text-white min-h-[100px]"
             placeholder="Dashboard description (optional)"
             disabled={isSubmitting}
           />
@@ -88,10 +69,10 @@ export function CreateDashboardModal({ onSubmit, onCancel }: CreateDashboardModa
               type="checkbox"
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
-              className="h-4 w-4 text-blue-600 border-gray-600 bg-gray-700 rounded focus:ring-blue-500"
+              className="h-4 w-4 border-gray-800 bg-black rounded focus:ring-gray-400"
               disabled={isSubmitting}
             />
-            <label htmlFor="is_public" className="ml-2 block text-sm text-gray-300">
+            <label htmlFor="is_public" className="ml-2 block text-sm text-gray-200">
               Make this dashboard public
             </label>
           </div>
@@ -101,14 +82,14 @@ export function CreateDashboardModal({ onSubmit, onCancel }: CreateDashboardModa
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-600 rounded-md text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="px-4 py-2 border border-gray-800 rounded-md text-gray-200 hover:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400"
             disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-white text-black rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-400"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Creating...' : 'Create Dashboard'}

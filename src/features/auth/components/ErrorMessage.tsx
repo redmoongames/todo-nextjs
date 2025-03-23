@@ -5,7 +5,7 @@ interface ErrorMessageProps {
   export function ErrorMessage({ error }: ErrorMessageProps) {
     return (
       <div>
-        <div className="bg-red-500/10 border border-red-500/50 text-red-300 text-sm p-3 rounded-lg text-center">
+        <div className="bg-red-900/20 border border-red-800 text-red-300 text-sm p-3 rounded-md text-center">
             {error}
         </div>
       </div>

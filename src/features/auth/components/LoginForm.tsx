@@ -86,9 +86,9 @@ export function LoginForm({ onSubmit, error, isSubmitting }: LoginFormProps) {
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
             type="checkbox"
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-700 rounded bg-gray-800"
+            className="h-4 w-4 border-gray-800 bg-black rounded focus:ring-gray-400"
           />
-          <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-300">
+          <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-200">
             Remember me for 30 days
           </label>
         </div>
@@ -105,7 +105,7 @@ export function LoginForm({ onSubmit, error, isSubmitting }: LoginFormProps) {
       <Divider text="Don't have an account?" />
 
       <div className="text-center">
-        <Link href="/register" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+        <Link href="/register" className="text-gray-200 hover:text-white font-medium transition-colors">
           Create a new account
         </Link>
       </div>

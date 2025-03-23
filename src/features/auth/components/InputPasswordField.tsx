@@ -25,7 +25,7 @@ export function InputPasswordField({
 }: InputPasswordFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-400 mb-2">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-200 mb-2">
         {label}
       </label>
       <div className="relative">
@@ -38,14 +38,14 @@ export function InputPasswordField({
           required
           value={value}
           onChange={onChange}
-          className="block w-full pl-10 pr-10 py-3 border border-gray-700 rounded-xl bg-gray-800/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+          className="block w-full pl-10 pr-10 py-3 border border-gray-800 rounded-md bg-black text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-700 transition-all duration-150"
           placeholder={placeholder}
         />
         {showPasswordToggle && onTogglePassword && (
           <button
             type="button"
             onClick={onTogglePassword}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors duration-200"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors duration-150"
           >
             {isPasswordVisible ? (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -5,20 +5,20 @@ interface PageBackgroundProps {
 
 export function PageBackground({ children, style = 'glass' }: PageBackgroundProps) {
   const backgroundStyles = {
-    glass: "bg-gradient-to-br from-gray-900 to-gray-800",
-    gradient: "bg-gradient-to-br from-indigo-900 to-purple-800",
-    pattern: "bg-gray-900 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[size:20px_20px]"
+    glass: "bg-black",
+    gradient: "bg-gradient-to-br from-gray-950 to-black",
+    pattern: "bg-black bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.05)_1px,_transparent_1px)] bg-[size:20px_20px]"
   };
 
   const containerStyles = {
-    glass: "bg-gray-800/50 backdrop-blur-sm border border-gray-700/50",
-    gradient: "bg-white/5 border border-white/10",
-    pattern: "bg-gray-800/90 border border-gray-700"
+    glass: "bg-black/90 backdrop-blur-sm border border-gray-800",
+    gradient: "bg-black border border-gray-800",
+    pattern: "bg-black border border-gray-800"
   };
 
   return (
     <div className={`min-h-screen flex items-center justify-center ${backgroundStyles[style]} px-4`}>
-      <div className={`max-w-md w-full p-10 ${containerStyles[style]} rounded-2xl shadow-2xl`}>
+      <div className={`max-w-md w-full p-10 ${containerStyles[style]} rounded-md shadow-xl`}>
         {children}
       </div>
     </div>

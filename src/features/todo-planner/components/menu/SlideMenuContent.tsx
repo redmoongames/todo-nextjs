@@ -30,9 +30,9 @@ export function SlideMenuContent({ isOpen, onToggle }: SlideMenuContentProps) {
 
   const openSettingsModal = () => {
     openModal(
-      <div className="p-6 bg-gray-800 rounded-lg">
+      <div className="p-6 bg-black rounded-lg border border-gray-800">
         <h3 className="text-xl font-semibold mb-4">Settings</h3>
-        <p className="text-gray-300">Settings content would go here.</p>
+        <p className="text-gray-400">Settings content would go here.</p>
       </div>
     );
   };
@@ -60,10 +60,10 @@ export function SlideMenuContent({ isOpen, onToggle }: SlideMenuContentProps) {
           damping: 30
         }
       }}
-      className="fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-lg z-40"
+      className="fixed top-0 left-0 h-full w-64 bg-black border-r border-gray-800 shadow-lg z-40"
     >
       <div className="flex flex-col h-full">
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-5 border-b border-gray-800">
           <h2 className="text-xl font-semibold text-white">Menu</h2>
         </div>
         <nav className="flex-1 p-4 space-y-2">
@@ -95,7 +95,7 @@ export function SlideMenuContent({ isOpen, onToggle }: SlideMenuContentProps) {
             action={{ type: 'modal', handler: openSettingsModal }}
           />
         </nav>
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-800">
           <SlideMenuItem 
             icon={<i className="fas fa-sign-out-alt"></i>}
             label="Logout"
