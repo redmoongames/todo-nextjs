@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ModalWrapper } from '@/features/modal';
-import { CreateDashboardData } from '@/features/todo-planner/types/Models';
+import { CreateDashboardData } from '@/features/todo-planner';
 
 interface CreateDashboardPopupProps {
   onSubmit: (data: CreateDashboardData) => Promise<void>;

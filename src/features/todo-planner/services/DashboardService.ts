@@ -6,9 +6,14 @@ import {
   DashboardDetailResult,
   DashboardOperationResult,
   OperationResult,
-  IDashboardService
+  IDashboardService,
+  ApiResponse
 } from '../types/index';
-import { ApiResponse, httpService } from '@/common/http';
+import { httpService } from '@/common/http';
+
+interface DashboardsResponse {
+  dashboards: Dashboard[];
+}
 
 export class DashboardService implements IDashboardService {
   private static instance: DashboardService;
@@ -24,21 +29,21 @@ export class DashboardService implements IDashboardService {
 
   public async getDashboards(): Promise<DashboardResult> {
     try {
-      const response = await httpService.get<Dashboard[]>('/todo/dashboards');
+      const response = await httpService.get<Dashboard[] | DashboardsResponse>('/todo/dashboards');
       if (!response.success) {
         return { success: false, error: response.error };
       }
-      let dashboards: Dashboard[] = this.extractDashboards(response);
+      const dashboards: Dashboard[] = this.extractDashboards(response);
       return { success: true, dashboards };
     } catch (error) {
       return { success: false, error: this.handleApiError(error) };
     }
   }
 
-  private extractDashboards(response: ApiResponse<any>): Dashboard[] {
+  private extractDashboards(response: ApiResponse<Dashboard[] | DashboardsResponse>): Dashboard[] {
     if (response.data) {
       if ('dashboards' in response.data) {
-        return (response.data as any).dashboards;
+        return response.data.dashboards;
       } else if (Array.isArray(response.data)) {
         return response.data; 
       }

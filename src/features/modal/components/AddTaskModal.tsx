@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useTodo, PRIORITY_OPTIONS, CreateTodoInput, TaskPriority } from '@/features/todo-planner';
+import { useTodo, PRIORITY_OPTIONS, CreateTodoInput } from '@/features/todo-planner';
+import type { TaskPriority } from '@/features/todo-planner';
 import { Button } from '@/common-ui/Button';
 import { Input } from '@/common-ui/Input';
 import { TextArea } from '@/common-ui/TextArea';

@@ -1,14 +1,35 @@
 import { 
-  Tag, 
-  CreateTagData, 
-  UpdateTagData 
-} from '../types/Models';
-import {
-  TagResult,
-  TagOperationResult,
+  Tag,
+  ApiResponse,
   OperationResult
-} from '../types/Responses';
-import { ITagService } from '../types/Interfaces';
+} from '../types/index';
+
+// Define interfaces for the service
+interface CreateTagData {
+  name: string;
+  color: string;
+}
+
+interface UpdateTagData {
+  name?: string;
+  color?: string;
+}
+
+interface TagsResult extends ApiResponse<Tag[]> {
+  tags?: Tag[];
+}
+
+interface TagResult extends ApiResponse<Tag> {
+  tag?: Tag;
+}
+
+interface ITagService {
+  getTags(dashboardId: string): Promise<TagsResult>;
+  createTag(dashboardId: string, data: CreateTagData): Promise<TagResult>;
+  updateTag(dashboardId: string, tagId: string, data: UpdateTagData): Promise<TagResult>;
+  deleteTag(dashboardId: string, tagId: string): Promise<OperationResult>;
+}
+
 import { httpService } from '@/common/http';
 
 export class TagService implements ITagService {
@@ -23,7 +44,7 @@ export class TagService implements ITagService {
     return TagService.instance;
   }
 
-  public async getTags(dashboardId: string): Promise<TagResult> {
+  public async getTags(dashboardId: string): Promise<TagsResult> {
     try {
       const response = await httpService.get<Tag[]>(`/api/todo/dashboards/${dashboardId}/tags`);
       
@@ -46,7 +67,7 @@ export class TagService implements ITagService {
     }
   }
 
-  public async createTag(dashboardId: string, data: CreateTagData): Promise<TagOperationResult> {
+  public async createTag(dashboardId: string, data: CreateTagData): Promise<TagResult> {
     try {
       if (!this.validateTagData(data)) {
         return {
@@ -76,7 +97,7 @@ export class TagService implements ITagService {
     }
   }
 
-  public async updateTag(dashboardId: string, tagId: string, data: UpdateTagData): Promise<TagOperationResult> {
+  public async updateTag(dashboardId: string, tagId: string, data: UpdateTagData): Promise<TagResult> {
     try {
       const response = await httpService.put<Tag>(`/api/todo/dashboards/${dashboardId}/tags/${tagId}`, data);
       

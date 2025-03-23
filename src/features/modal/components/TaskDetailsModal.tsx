@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useModal } from '../providers/ModalProvider';
-import { Task } from '@/features/todo-planner/types';
+import { Task } from '@/features/todo-planner';
 import { formatDistanceToNow } from 'date-fns';
 
 interface TaskDetailsModalProps {
@@ -74,14 +74,18 @@ export function TaskDetailsModal({ task, onComplete, onDelete }: TaskDetailsModa
       
       <div className="space-y-4">
         <div>
-          <h3 className="text-sm font-medium text-gray-300 mb-2">Labels</h3>
-          <div className="flex flex-wrap gap-2">
-            {task.labels && task.labels.map((label) => (
+          <h3 className="text-sm font-medium text-gray-300 mb-2">Tags</h3>
+          <div className="flex flex-wrap">
+            {task.tags && task.tags.map((tag: {id: string; name: string; color: string}) => (
               <span
-                key={label.id}
-                className={`px-2 py-1 text-xs font-medium rounded-full ${label.color} text-white`}
+                key={tag.id}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 mb-2"
+                style={{
+                  backgroundColor: tag.color ? `${tag.color}40` : '#9CA3AF40', 
+                  color: tag.color || '#9CA3AF'
+                }}
               >
-                {label.name}
+                {tag.name}
               </span>
             ))}
           </div>

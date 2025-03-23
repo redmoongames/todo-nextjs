@@ -11,7 +11,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response = await proxyRequest(modifiedRequest, '/api/v1/todo/dashboards/');
     
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, message: 'Failed to process dashboard creation request' },
       { status: 500 }

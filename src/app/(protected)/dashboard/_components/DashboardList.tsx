@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Dashboard } from '@/features/todo-planner/types/Models';
+import { Dashboard } from '@/features/todo-planner';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 

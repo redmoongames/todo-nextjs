@@ -4,11 +4,25 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const cookies = request.headers.get('cookie');
-    const result: Record<string, any> = {
+    
+    interface DebugResult {
+      hasCookies: boolean;
+      cookieCount: number;
+      cookies: Record<string, string>;
+      csrfToken: null | {
+        exists: boolean;
+        length: number;
+        preview: string;
+      };
+      headers: Record<string, string>;
+    }
+    
+    const result: DebugResult = {
       hasCookies: !!cookies,
       cookieCount: 0,
       cookies: {},
-      csrfToken: null
+      csrfToken: null,
+      headers: {}
     };
     
     if (cookies) {
@@ -44,7 +58,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     
     // Add headers from request
-    result.headers = {};
     request.headers.forEach((value, key) => {
       if (['cookie', 'authorization'].includes(key.toLowerCase())) {
         result.headers[key] = '(value hidden)';

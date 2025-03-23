@@ -1,6 +1,5 @@
 import { 
   Todo, 
-  TodoFilterOptions,
   CreateTodoData,
   UpdateTodoData,
   TodoResult,
@@ -8,8 +7,7 @@ import {
   TodoOperationResult,
   OperationResult,
   TodoFilters,
-  ITodoService,
-  ApiResponse
+  ITodoService
 } from '../types/index';
 import { httpService } from '@/common/http';
 
@@ -52,7 +50,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todos: response.data as Todo[]
+        todos: response.data ?? []
       };
     } catch (error) {
       return {
@@ -75,7 +73,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todo: response.data as Todo
+        todo: response.data
       };
     } catch (error) {
       return {
@@ -105,7 +103,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todo: response.data as Todo
+        todo: response.data
       };
     } catch (error) {
       return {
@@ -128,7 +126,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todo: response.data as Todo
+        todo: response.data
       };
     } catch (error) {
       return {
@@ -173,7 +171,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todo: response.data as Todo
+        todo: response.data
       };
     } catch (error) {
       return {
@@ -196,7 +194,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todo: response.data as Todo
+        todo: response.data
       };
     } catch (error) {
       return {
@@ -230,7 +228,7 @@ export class TodoService implements ITodoService {
       
       return {
         success: true,
-        todos: response.data as Todo[]
+        todos: response.data ?? []
       };
     } catch (error) {
       return {

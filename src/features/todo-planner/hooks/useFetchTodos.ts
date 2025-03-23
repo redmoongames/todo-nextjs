@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { TodoFilterOptions, Todo } from '../types/index';
 import { todoService } from '../services/TodoService';
 

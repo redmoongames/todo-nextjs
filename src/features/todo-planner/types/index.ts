@@ -17,7 +17,6 @@ export type { ApiResponse };
 import { Todo, TodoFilterOptions } from './core/TodoTypes';
 import { Dashboard } from './core/DashboardTypes';
 import { CreateTodoInput, UpdateTodoInput, CreateDashboardInput, UpdateDashboardInput } from './api/RequestTypes';
-import { TodoResponse, TodosResponse, DashboardResponse, DashboardsResponse } from './api/ResponseTypes';
 
 // Old Models.ts exports
 export type TodoFilters = TodoFilterOptions;
@@ -45,4 +44,7 @@ export interface DashboardDetailResult extends ApiResponse<Dashboard> {
 export interface DashboardOperationResult extends ApiResponse<Dashboard> {
   dashboard?: Dashboard;
 }
-export interface OperationResult extends ApiResponse<void> {} 
+export interface OperationResult extends ApiResponse<void> {
+  // Adding a comment to avoid empty interface warning
+  status?: 'success' | 'error';
+} 

@@ -1,14 +1,35 @@
 import { 
   DashboardMember,
-  AddMemberData,
-  UpdateMemberData
-} from '../types/Models';
-import {
-  DashboardMembersResult,
-  MemberOperationResult,
-  OperationResult
-} from '../types/Responses';
-import { IDashboardMemberService } from '../types/Interfaces';
+  DashboardRole,
+  OperationResult,
+  ApiResponse
+} from '../types/index';
+
+// Define interfaces for the service imports
+interface AddMemberData {
+  email: string;
+  role: DashboardRole;
+}
+
+interface UpdateMemberData {
+  role: DashboardRole;
+}
+
+interface MemberOperationResult extends ApiResponse<DashboardMember> {
+  member?: DashboardMember;
+}
+
+interface DashboardMembersResult extends ApiResponse<DashboardMember[]> {
+  members?: DashboardMember[];
+}
+
+interface IDashboardMemberService {
+  getDashboardMembers(dashboardId: string): Promise<DashboardMembersResult>;
+  addDashboardMember(dashboardId: string, data: AddMemberData): Promise<MemberOperationResult>;
+  updateDashboardMember(dashboardId: string, memberId: string, data: UpdateMemberData): Promise<MemberOperationResult>;
+  removeDashboardMember(dashboardId: string, memberId: string): Promise<OperationResult>;
+}
+
 import { httpService } from '@/common/http';
 
 export class DashboardMemberService implements IDashboardMemberService {

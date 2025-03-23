@@ -113,9 +113,12 @@ function ModalActionsExample() {
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleForm = () => {
+    interface FormData {
+      name: string;
+    }
+    
     interface FormProps {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSubmit: (data: any) => void;
+      onSubmit: (data: FormData) => void;
       onClose: () => void;
     }
     
@@ -145,9 +148,8 @@ function ModalActionsExample() {
     
     withForm(
       MyFormComponent,
-      // @ts-expect-error This is just an example
       {
-        onSubmit: (data) => {
+        onSubmit: (data: FormData) => {
           console.log('Form submitted:', data);
         }
       },

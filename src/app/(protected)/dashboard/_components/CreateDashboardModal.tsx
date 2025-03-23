@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreateDashboardData } from '@/features/todo-planner/types/Models';
+import { CreateDashboardData } from '@/features/todo-planner';
 
 interface CreateDashboardModalProps {
   onSubmit: (data: CreateDashboardData) => Promise<void>;
