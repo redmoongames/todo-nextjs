@@ -16,7 +16,7 @@ export class HttpService {
     this.baseUrl = baseUrl;
   }
 
-  public static getInstance(baseUrl: string = '/api'): HttpService {
+  public static getInstance(baseUrl: string = ''): HttpService {
     if (!HttpService.instance) {
       HttpService.instance = new HttpService(baseUrl);
     }

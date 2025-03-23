@@ -17,7 +17,7 @@ export class SessionService implements ISessionService {
 
   public async checkSession(): Promise<{ isAuthenticated: boolean; user: User | null }> {
     try {
-      const response = await httpService.get<{ success: boolean }>('/auth/session');
+      const response = await httpService.get<{ success: boolean }>('/api/auth/session');
       
       if (!response.success) {
         return { isAuthenticated: false, user: null };
@@ -32,7 +32,7 @@ export class SessionService implements ISessionService {
   
   public async getUserInfo(): Promise<{ isAuthenticated: boolean; user: User | null }> {
     try {
-      const response = await httpService.get<User>('/auth/user');
+      const response = await httpService.get<User>('/api/auth/user');
       
       if (!response.success || !response.data) {
         return { isAuthenticated: false, user: null };
@@ -50,7 +50,7 @@ export class SessionService implements ISessionService {
   
   public async refreshSession(): Promise<boolean> {
     try {
-      const response = await httpService.post<{ success: boolean }>('/auth/refresh');
+      const response = await httpService.post<{ success: boolean }>('/api/auth/refresh');
       return response.success;
     } catch (error) {
       console.error('Session refresh error:', error);

@@ -51,7 +51,7 @@ export class AuthenticationService implements IAuthenticationService {
     try {
       const payload = this.prepareLoginPayload(credentials);
       
-      const response = await httpService.post<LoginResponse>('/auth/login', payload);
+      const response = await httpService.post<LoginResponse>('/api/auth/login', payload);
       
       if (!response.success) {
         return {
@@ -108,7 +108,7 @@ export class AuthenticationService implements IAuthenticationService {
     try {
       const requestData = this.prepareRegistrationData(data);
       
-      const response = await httpService.post<RegisterResponse>('/auth/register', requestData);
+      const response = await httpService.post<RegisterResponse>('/api/auth/register', requestData);
       
       if (!response.success) {
         return {
@@ -165,7 +165,7 @@ export class AuthenticationService implements IAuthenticationService {
   
   public async logout(): Promise<{ success: boolean; redirect?: string }> {
     try {
-      const response = await httpService.post<{ redirect?: string }>('/auth/logout');
+      const response = await httpService.post<{ redirect?: string }>('/api/auth/logout');
       
       if (!response.success) {
         return { success: false };

@@ -15,7 +15,7 @@ export class UserService implements IUserService {
   }
 
   public async getCurrentUser(): Promise<User | null> {
-    const response = await httpService.get<User>('/auth/user');
+    const response = await httpService.get<User>('/api/auth/user');
     
     if (!response.success || !response.data) {
       return null;
@@ -25,7 +25,7 @@ export class UserService implements IUserService {
   }
   
   public async getUserById(userId: string): Promise<User | null> {
-    const response = await httpService.get<User>(`/auth/users/${userId}`);
+    const response = await httpService.get<User>(`/api/auth/users/${userId}`);
     
     if (!response.success || !response.data) {
       return null;
@@ -35,7 +35,7 @@ export class UserService implements IUserService {
   }
   
   public async updateUserProfile(userId: string, profileData: Partial<User>): Promise<boolean> {
-    const response = await httpService.put<User>(`/auth/users/${userId}`, profileData);
+    const response = await httpService.put<User>(`/api/auth/users/${userId}`, profileData);
     
     return response.success;
   }
@@ -46,13 +46,13 @@ export class UserService implements IUserService {
       newPassword
     };
     
-    const response = await httpService.post<{ success: boolean }>(`/auth/users/${userId}/change-password`, passwordData);
+    const response = await httpService.post<{ success: boolean }>(`/api/auth/users/${userId}/change-password`, passwordData);
     
     return response.success;
   }
   
   public async deleteAccount(userId: string, password: string): Promise<boolean> {
-    const response = await httpService.delete<{ success: boolean }>(`/auth/users/${userId}?password=${encodeURIComponent(password)}&confirmation=true`);
+    const response = await httpService.delete<{ success: boolean }>(`/api/auth/users/${userId}?password=${encodeURIComponent(password)}&confirmation=true`);
     
     if (response.success) {
       sessionService.clearSession();
@@ -62,7 +62,7 @@ export class UserService implements IUserService {
   }
 
   public async updateProfile(userData: Partial<User>): Promise<User | null> {
-    const response = await httpService.put<User>('/auth/user', userData);
+    const response = await httpService.put<User>('/api/auth/user', userData);
     
     if (!response.success || !response.data) {
       return null;

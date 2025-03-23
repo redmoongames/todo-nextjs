@@ -20,7 +20,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
-  console.log('[API ROUTE] deleting dashboard', request);
   return proxyRequest(request, '/api/v1/todo/dashboards/');
 }
 

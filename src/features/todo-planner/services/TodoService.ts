@@ -39,7 +39,7 @@ export class TodoService implements ITodoService {
         }
       }
       
-      const response = await httpService.get<Todo[]>(endpoint);
+      const response = await httpService.get<any>(endpoint);
       
       if (!response.success) {
         return {
@@ -48,9 +48,18 @@ export class TodoService implements ITodoService {
         };
       }
       
+      // Parse the nested structure correctly
+      let todosArray: Todo[] = [];
+      
+      if (response.data?.todos && Array.isArray(response.data.todos)) {
+        todosArray = response.data.todos;
+      } else if (Array.isArray(response.data)) {
+        todosArray = response.data;
+      }
+      
       return {
         success: true,
-        todos: response.data ?? []
+        todos: todosArray
       };
     } catch (error) {
       return {
@@ -217,7 +226,7 @@ export class TodoService implements ITodoService {
       
       const endpoint = `/api/todo/dashboards/${dashboardId}/search?${queryParams.toString()}`;
       
-      const response = await httpService.get<Todo[]>(endpoint);
+      const response = await httpService.get<any>(endpoint);
       
       if (!response.success) {
         return {
@@ -226,9 +235,18 @@ export class TodoService implements ITodoService {
         };
       }
       
+      // Parse the nested structure correctly
+      let todosArray: Todo[] = [];
+      
+      if (response.data?.todos && Array.isArray(response.data.todos)) {
+        todosArray = response.data.todos;
+      } else if (Array.isArray(response.data)) {
+        todosArray = response.data;
+      }
+      
       return {
         success: true,
-        todos: response.data ?? []
+        todos: todosArray
       };
     } catch (error) {
       return {

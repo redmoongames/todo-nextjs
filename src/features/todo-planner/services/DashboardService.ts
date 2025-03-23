@@ -29,7 +29,7 @@ export class DashboardService implements IDashboardService {
 
   public async getDashboards(): Promise<DashboardResult> {
     try {
-      const response = await httpService.get<Dashboard[] | DashboardsResponse>('/todo/dashboards');
+      const response = await httpService.get<Dashboard[] | DashboardsResponse>('/api/todo/dashboards');
       if (!response.success) {
         return { success: false, error: response.error };
       }
@@ -53,7 +53,7 @@ export class DashboardService implements IDashboardService {
 
   public async getDashboardById(id: string): Promise<DashboardDetailResult> {
     try {
-      const response = await httpService.get<Dashboard>(`/todo/dashboards/${id}`);
+      const response = await httpService.get<Dashboard>(`/api/todo/dashboards/${id}`);
       
       if (!response.success) {
         return {
@@ -64,7 +64,7 @@ export class DashboardService implements IDashboardService {
       
       return {
         success: true,
-        dashboard: response.data as Dashboard
+        dashboard: response.data
       };
     } catch (error) {
       return {
@@ -83,7 +83,7 @@ export class DashboardService implements IDashboardService {
         };
       }
       
-      const response = await httpService.post<Dashboard>('/todo/dashboards', data);
+      const response = await httpService.post<Dashboard>('/api/todo/dashboards', data);
       
       if (!response.success) {
         return {
@@ -94,7 +94,7 @@ export class DashboardService implements IDashboardService {
       
       return {
         success: true,
-        dashboard: response.data as Dashboard
+        dashboard: response.data
       };
     } catch (error) {
       return {
@@ -106,7 +106,7 @@ export class DashboardService implements IDashboardService {
 
   public async updateDashboard(id: string, data: UpdateDashboardData): Promise<DashboardOperationResult> {
     try {
-      const response = await httpService.put<Dashboard>(`/todo/dashboards/${id}`, data);
+      const response = await httpService.put<Dashboard>(`/api/todo/dashboards/${id}`, data);
       
       if (!response.success) {
         return {
@@ -117,7 +117,7 @@ export class DashboardService implements IDashboardService {
       
       return {
         success: true,
-        dashboard: response.data as Dashboard
+        dashboard: response.data
       };
     } catch (error) {
       return {
@@ -130,7 +130,7 @@ export class DashboardService implements IDashboardService {
   public async deleteDashboard(id: string): Promise<OperationResult> {
     try {
       console.log('deleting dashboard', id);
-      const response = await httpService.delete(`/todo/dashboards/${id}`);
+      const response = await httpService.delete(`/api/todo/dashboards/${id}`);
       console.log('response', response);
       if (!response.success) {
         return {

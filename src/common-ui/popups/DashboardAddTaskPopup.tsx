@@ -7,23 +7,25 @@ import { Button } from '@/common-ui/Button/Button';
 import { Input } from '@/common-ui/Input';
 import { TextArea } from '@/common-ui/TextArea';
 import { Select } from '@/common-ui/Select';
+import { todoService } from '@/features/todo-planner/services/TodoService';
 
-interface AddTaskPopupProps {
-  dashboardId?: string;
+interface DashboardAddTaskPopupProps {
+  dashboardId: string;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export function AddTaskPopup({ dashboardId, onClose, onSuccess }: AddTaskPopupProps) {
-  const { createTodo } = useTodo();
+export function DashboardAddTaskPopup({ dashboardId, onClose, onSuccess }: DashboardAddTaskPopupProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriority>(3);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const todoData: CreateTodoInput = {
@@ -32,25 +34,30 @@ export function AddTaskPopup({ dashboardId, onClose, onSuccess }: AddTaskPopupPr
         priority
       };
 
-      const result = await createTodo(todoData, dashboardId);
+      const result = await todoService.createTodo(dashboardId, todoData);
       
       if (result.success) {
         onSuccess?.();
         onClose();
+      } else {
+        setError(result.error || 'Failed to create task');
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-auto"
-    >
+    <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 className="text-2xl font-bold text-white mb-4">Add New Task</h2>
+      
+      {error && (
+        <div className="bg-red-900/30 text-red-200 p-3 rounded-md mb-4">
+          {error}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -98,6 +105,6 @@ export function AddTaskPopup({ dashboardId, onClose, onSuccess }: AddTaskPopupPr
           </Button>
         </div>
       </form>
-    </motion.div>
+    </div>
   );
 } 
