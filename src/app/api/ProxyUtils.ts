@@ -73,6 +73,8 @@ export async function forwardToBackend(
         body = undefined;
       }
     }
+
+    console.log('[forwardToBackend] Body:', body);
     
     const headers = new Headers();
     request.headers.forEach((value, key) => {
@@ -92,6 +94,8 @@ export async function forwardToBackend(
         headers.set('CSRF-Token', csrfToken);
       }
     }
+
+    console.log('[forwardToBackend] Headers:', headers);
     
     if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
       try {
@@ -104,6 +108,8 @@ export async function forwardToBackend(
     }
     
     const targetUrl = `${API_URL}${endpoint}`;
+
+    console.log('[forwardToBackend] Target URL:', targetUrl);
     
     let response: Response;
     
