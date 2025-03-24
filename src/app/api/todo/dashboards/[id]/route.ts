@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proxyRequest } from '../../../ProxyUtils';
+import { forwardToBackend } from '../../../ProxyUtils';
 
 export async function GET(
   request: NextRequest, 
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const { id } = await params;
-  return proxyRequest(request, `/api/v1/todo/dashboards/${id}/`);
+  return forwardToBackend(request, `/api/v1/todo/dashboards/${id}/`);
 }
 
 export async function PUT(
@@ -14,7 +14,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const { id } = await params;
-  return proxyRequest(request, `/api/v1/todo/dashboards/${id}/`);
+  return forwardToBackend(request, `/api/v1/todo/dashboards/${id}/`);
 }
 
 export async function DELETE(
@@ -22,5 +22,5 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const { id } = await params;
-  return proxyRequest(request, `/api/v1/todo/dashboards/${id}/`);
+  return forwardToBackend(request, `/api/v1/todo/dashboards/${id}/`);
 } 

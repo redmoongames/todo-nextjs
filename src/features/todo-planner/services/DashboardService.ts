@@ -7,16 +7,12 @@ import {
   DashboardOperationResult,
   OperationResult,
   IDashboardService,
-  ApiResponse
+  DashboardsResponse
 } from '../types/index';
-import { httpService } from '@/common/http';
-
-interface DashboardsResponse {
-  dashboards: Dashboard[];
-}
 
 export class DashboardService implements IDashboardService {
   private static instance: DashboardService;
+  private readonly baseUrl = '/api/todo/dashboards';
   
   private constructor() {}
   
@@ -29,42 +25,49 @@ export class DashboardService implements IDashboardService {
 
   public async getDashboards(): Promise<DashboardResult> {
     try {
-      const response = await httpService.get<Dashboard[] | DashboardsResponse>('/api/todo/dashboards');
-      if (!response.success) {
-        return { success: false, error: response.error };
+      const response = await fetch(this.baseUrl, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Failed to fetch dashboards' };
       }
-      const dashboards: Dashboard[] = this.extractDashboards(response);
+      
+      const dashboards: Dashboard[] = this.extractDashboards(data);
       return { success: true, dashboards };
     } catch (error) {
       return { success: false, error: this.handleApiError(error) };
     }
   }
 
-  private extractDashboards(response: ApiResponse<Dashboard[] | DashboardsResponse>): Dashboard[] {
-    if (response.data) {
-      if ('dashboards' in response.data) {
-        return response.data.dashboards;
-      } else if (Array.isArray(response.data)) {
-        return response.data; 
-      }
-    }
-    return [];
+  private extractDashboards(data: Dashboard[] | DashboardsResponse): Dashboard[] {
+    return Array.isArray(data) 
+      ? data 
+      : data?.dashboards ?? [];
   }
 
   public async getDashboardById(id: string): Promise<DashboardDetailResult> {
     try {
-      const response = await httpService.get<Dashboard>(`/api/todo/dashboards/${id}`);
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
-      if (!response.success) {
+      const data = await response.json();
+      
+      if (!response.ok) {
         return {
           success: false,
-          error: response.error
+          error: data.message || 'Failed to fetch dashboard'
         };
       }
       
       return {
         success: true,
-        dashboard: response.data
+        dashboard: data
       };
     } catch (error) {
       return {
@@ -83,18 +86,25 @@ export class DashboardService implements IDashboardService {
         };
       }
       
-      const response = await httpService.post<Dashboard>('/api/todo/dashboards', data);
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
       
-      if (!response.success) {
+      const responseData = await response.json();
+      
+      if (!response.ok) {
         return {
           success: false,
-          error: response.error
+          error: responseData.message || 'Failed to create dashboard'
         };
       }
       
       return {
         success: true,
-        dashboard: response.data
+        dashboard: responseData
       };
     } catch (error) {
       return {
@@ -106,18 +116,25 @@ export class DashboardService implements IDashboardService {
 
   public async updateDashboard(id: string, data: UpdateDashboardData): Promise<DashboardOperationResult> {
     try {
-      const response = await httpService.put<Dashboard>(`/api/todo/dashboards/${id}`, data);
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
       
-      if (!response.success) {
+      const responseData = await response.json();
+      
+      if (!response.ok) {
         return {
           success: false,
-          error: response.error
+          error: responseData.message || 'Failed to update dashboard'
         };
       }
       
       return {
         success: true,
-        dashboard: response.data
+        dashboard: responseData
       };
     } catch (error) {
       return {
@@ -129,13 +146,18 @@ export class DashboardService implements IDashboardService {
 
   public async deleteDashboard(id: string): Promise<OperationResult> {
     try {
-      console.log('deleting dashboard', id);
-      const response = await httpService.delete(`/api/todo/dashboards/${id}`);
-      console.log('response', response);
-      if (!response.success) {
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
         return {
           success: false,
-          error: response.error
+          error: data.message || 'Failed to delete dashboard'
         };
       }
       
@@ -151,11 +173,14 @@ export class DashboardService implements IDashboardService {
   }
 
   private validateDashboardData(data: CreateDashboardData | UpdateDashboardData): boolean {
-    return !!data.title?.trim();
+    return Boolean(data.title?.trim());
   }
   
   private handleApiError(error: unknown): string {
-    return error instanceof Error ? error.message : 'An unexpected error occurred';
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return 'An unexpected error occurred';
   }
 }
 

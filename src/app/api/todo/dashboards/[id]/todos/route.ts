@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proxyRequest } from '../../../../ProxyUtils';
+import { forwardToBackend } from '../../../../ProxyUtils';
 
 export async function GET(
   request: NextRequest, 
@@ -7,7 +7,7 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id } = await params;
   console.log('[API ROUTE] getting todos for dashboard', id);
-  return proxyRequest(request, `/api/v1/todo/dashboards/${id}/todos/`);
+  return forwardToBackend(request, `/api/v1/todo/dashboards/${id}/todos/`);
 }
 
 export async function POST(
@@ -16,5 +16,5 @@ export async function POST(
 ): Promise<NextResponse> {
   const { id } = await params;
   console.log('[API ROUTE] creating todo for dashboard', id);
-  return proxyRequest(request, `/api/v1/todo/dashboards/${id}/todos/`);
+  return forwardToBackend(request, `/api/v1/todo/dashboards/${id}/todos/`);
 }

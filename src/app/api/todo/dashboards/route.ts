@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { proxyRequest } from '../../ProxyUtils';
+import { forwardToBackend } from '../../ProxyUtils';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  return proxyRequest(request, '/api/v1/todo/dashboards/');
+  return forwardToBackend(request, '/api/v1/todo/dashboards/');
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const modifiedRequest = addDebugHeaders(request);
-    const response = await proxyRequest(modifiedRequest, '/api/v1/todo/dashboards/');
+    const response = await forwardToBackend(modifiedRequest, '/api/v1/todo/dashboards/');
     
     return response;
   } catch {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
-  return proxyRequest(request, '/api/v1/todo/dashboards/');
+  return forwardToBackend(request, '/api/v1/todo/dashboards/');
 }
 
 

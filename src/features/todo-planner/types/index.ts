@@ -9,13 +9,15 @@ export * from './api/ResponseTypes';
 // Re-export interfaces
 export * from './interfaces/ServiceInterfaces';
 
-// Export common HTTP types
-import type { ApiResponse } from '@/common/http/types';
-export type { ApiResponse };
+// Base response type
+export interface BaseResponse {
+  success: boolean;
+  error?: string;
+}
 
 // Legacy aliases for backward compatibility
-import { Todo, TodoFilterOptions } from './core/TodoTypes';
-import { Dashboard } from './core/DashboardTypes';
+import { Todo, TodoFilterOptions, Tag } from './core/TodoTypes';
+import { Dashboard, DashboardMember } from './core/DashboardTypes';
 import { CreateTodoInput, UpdateTodoInput, CreateDashboardInput, UpdateDashboardInput } from './api/RequestTypes';
 
 // Old Models.ts exports
@@ -25,26 +27,57 @@ export type UpdateTodoData = UpdateTodoInput;
 export type CreateDashboardData = CreateDashboardInput;
 export type UpdateDashboardData = UpdateDashboardInput;
 
-// Old Responses.ts exports
-export interface TodoResult extends ApiResponse<Todo[]> {
+// Response types
+export interface TodoResult extends BaseResponse {
   todos?: Todo[];
 }
-export interface TodoDetailResult extends ApiResponse<Todo> {
+
+export interface TodoDetailResult extends BaseResponse {
   todo?: Todo;
 }
-export interface TodoOperationResult extends ApiResponse<Todo> {
+
+export interface TodoOperationResult extends BaseResponse {
   todo?: Todo;
 }
-export interface DashboardResult extends ApiResponse<Dashboard[]> {
+
+export interface DashboardResult extends BaseResponse {
   dashboards?: Dashboard[];
 }
-export interface DashboardDetailResult extends ApiResponse<Dashboard> {
+
+export interface DashboardDetailResult extends BaseResponse {
   dashboard?: Dashboard;
 }
-export interface DashboardOperationResult extends ApiResponse<Dashboard> {
+
+export interface DashboardOperationResult extends BaseResponse {
   dashboard?: Dashboard;
 }
-export interface OperationResult extends ApiResponse<void> {
-  // Adding a comment to avoid empty interface warning
+
+export interface OperationResult extends BaseResponse {
   status?: 'success' | 'error';
+}
+
+// Member result types
+export interface MemberResult extends BaseResponse {
+  members?: DashboardMember[];
+}
+
+export interface MemberDetailResult extends BaseResponse {
+  member?: DashboardMember;
+}
+
+export interface MemberOperationResult extends BaseResponse {
+  member?: DashboardMember;
+}
+
+// Tag result types
+export interface TagResult extends BaseResponse {
+  tags?: Tag[];
+}
+
+export interface TagDetailResult extends BaseResponse {
+  tag?: Tag;
+}
+
+export interface TagOperationResult extends BaseResponse {
+  tag?: Tag;
 } 

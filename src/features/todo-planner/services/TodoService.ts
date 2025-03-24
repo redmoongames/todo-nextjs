@@ -9,24 +9,25 @@ import {
   TodoFilters,
   ITodoService
 } from '../types/index';
-import { httpService } from '@/common/http';
-
-interface TodoResponse {
-  todos?: Todo[];
-  todo?: Todo;
-  [key: string]: unknown;
-}
 
 export class TodoService implements ITodoService {
-  private static instance: TodoService;
-  
-  private constructor() {}
-  
-  public static getInstance(): TodoService {
-    if (!TodoService.instance) {
-      TodoService.instance = new TodoService();
+  private async fetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(endpoint, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...init?.headers,
+      }
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Request failed');
     }
-    return TodoService.instance;
+
+    return data;
   }
 
   public async getTodos(dashboardId: string, filters?: TodoFilters): Promise<TodoResult> {
@@ -45,55 +46,32 @@ export class TodoService implements ITodoService {
         }
       }
       
-      const response = await httpService.get<TodoResponse>(endpoint);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
-      
-      // Parse the nested structure correctly
-      let todosArray: Todo[] = [];
-      
-      if (response.data?.todos && Array.isArray(response.data.todos)) {
-        todosArray = response.data.todos;
-      } else if (Array.isArray(response.data)) {
-        todosArray = response.data;
-      }
+      const data = await this.fetch<{ todos: Todo[] }>(endpoint);
       
       return {
         success: true,
-        todos: todosArray
+        todos: data.todos
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to fetch todos'
       };
     }
   }
 
   public async getTodoById(dashboardId: string, todoId: string): Promise<TodoDetailResult> {
     try {
-      const response = await httpService.get<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      const todo = await this.fetch<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`);
       
       return {
         success: true,
-        todo: response.data
+        todo
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to fetch todo'
       };
     }
   }
@@ -107,60 +85,47 @@ export class TodoService implements ITodoService {
         };
       }
       
-      const response = await httpService.post<Todo>(`/api/todo/dashboards/${dashboardId}/todos`, data);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      const todo = await this.fetch<Todo>(`/api/todo/dashboards/${dashboardId}/todos`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
       
       return {
         success: true,
-        todo: response.data
+        todo
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to create todo'
       };
     }
   }
 
   public async updateTodo(dashboardId: string, todoId: string, data: UpdateTodoData): Promise<TodoOperationResult> {
     try {
-      const response = await httpService.put<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`, data);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      const todo = await this.fetch<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
       
       return {
         success: true,
-        todo: response.data
+        todo
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to update todo'
       };
     }
   }
 
   public async deleteTodo(dashboardId: string, todoId: string): Promise<OperationResult> {
     try {
-      const response = await httpService.delete(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      await this.fetch(`/api/todo/dashboards/${dashboardId}/todos/${todoId}`, {
+        method: 'DELETE'
+      });
       
       return {
         success: true
@@ -168,53 +133,43 @@ export class TodoService implements ITodoService {
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to delete todo'
       };
     }
   }
 
   public async completeTodo(dashboardId: string, todoId: string): Promise<TodoOperationResult> {
     try {
-      const response = await httpService.post<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}/complete`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      const todo = await this.fetch<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}/complete`, {
+        method: 'POST'
+      });
       
       return {
         success: true,
-        todo: response.data
+        todo
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to complete todo'
       };
     }
   }
 
   public async uncompleteTodo(dashboardId: string, todoId: string): Promise<TodoOperationResult> {
     try {
-      const response = await httpService.post<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}/uncomplete`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
+      const todo = await this.fetch<Todo>(`/api/todo/dashboards/${dashboardId}/todos/${todoId}/uncomplete`, {
+        method: 'POST'
+      });
       
       return {
         success: true,
-        todo: response.data
+        todo
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to uncomplete todo'
       };
     }
   }
@@ -232,43 +187,23 @@ export class TodoService implements ITodoService {
       
       const endpoint = `/api/todo/dashboards/${dashboardId}/search?${queryParams.toString()}`;
       
-      const response = await httpService.get<TodoResponse>(endpoint);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
-      
-      // Parse the nested structure correctly
-      let todosArray: Todo[] = [];
-      
-      if (response.data?.todos && Array.isArray(response.data.todos)) {
-        todosArray = response.data.todos;
-      } else if (Array.isArray(response.data)) {
-        todosArray = response.data;
-      }
+      const data = await this.fetch<{ todos: Todo[] }>(endpoint);
       
       return {
         success: true,
-        todos: todosArray
+        todos: data.todos
       };
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: error instanceof Error ? error.message : 'Failed to search todos'
       };
     }
   }
 
   private validateTodoData(data: CreateTodoData): boolean {
-    return !!data.title?.trim();
-  }
-  
-  private handleApiError(error: unknown): string {
-    return error instanceof Error ? error.message : 'An unexpected error occurred';
+    return Boolean(data.title?.trim());
   }
 }
 
-export const todoService = TodoService.getInstance(); 
+export const todoService = new TodoService(); 

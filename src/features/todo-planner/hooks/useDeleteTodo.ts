@@ -1,50 +1,34 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { todoService } from '../services/TodoService';
-import { ApiResponse } from '@/common/http/types';
+import { OperationResult } from '../types';
 
 export function useDeleteTodo(dashboardId: string | null) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deleteTodo = useCallback(async (todoId: number): Promise<ApiResponse<void>> => {
+  const deleteTodo = async (todoId: number | string): Promise<OperationResult> => {
     if (!dashboardId) {
-      const errorMessage = 'No dashboard selected';
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: 'No dashboard selected' };
     }
 
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      const response = await todoService.deleteTodo(dashboardId, todoId.toString());
-      
-      setIsSubmitting(false);
-      
-      if (!response.success) {
-        setError(response.error || 'Failed to delete todo');
-      }
-      
-      return response;
-    } catch (error) {
-      setIsSubmitting(false);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const result = await todoService.deleteTodo(dashboardId, String(todoId));
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete todo';
       setError(errorMessage);
-      
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [dashboardId]);
+  };
 
   return {
     deleteTodo,
     isSubmitting,
-    error,
-    clearError: () => setError(null)
+    error
   };
 } 

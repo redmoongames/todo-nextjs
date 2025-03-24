@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function getApiUrl(): string {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.redmen.store';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    throw new Error('NEXT_PUBLIC_API_URL is not defined');
+  }
   const url = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
   return url;
 }
@@ -46,7 +49,7 @@ export type ApiResponse<T = unknown> = {
   message?: string;
 };
 
-export async function proxyRequest(
+export async function forwardToBackend(
   request: NextRequest,
   endpoint: string,
   options: {

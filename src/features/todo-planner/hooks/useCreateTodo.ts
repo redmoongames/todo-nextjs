@@ -1,52 +1,35 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { CreateTodoInput } from '../types/api/RequestTypes';
-import { Todo } from '../types/core/TodoTypes';
 import { todoService } from '../services/TodoService';
-import { ApiResponse } from '@/common/http/types';
+import { TodoOperationResult } from '../types';
 
 export function useCreateTodo(dashboardId: string | null) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createTodo = useCallback(async (input: CreateTodoInput): Promise<ApiResponse<Todo>> => {
+  const createTodo = async (input: CreateTodoInput): Promise<TodoOperationResult> => {
     if (!dashboardId) {
-      const errorMessage = 'No dashboard selected';
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: 'No dashboard selected' };
     }
 
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      const response = await todoService.createTodo(dashboardId, input);
-      
-      setIsSubmitting(false);
-      
-      if (!response.success) {
-        setError(response.error || 'Failed to create todo');
-      }
-      
-      return response;
-    } catch (error) {
-      setIsSubmitting(false);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const result = await todoService.createTodo(dashboardId, input);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create todo';
       setError(errorMessage);
-      
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [dashboardId]);
+  };
 
   return {
     createTodo,
     isSubmitting,
-    error,
-    clearError: () => setError(null)
+    error
   };
 } 

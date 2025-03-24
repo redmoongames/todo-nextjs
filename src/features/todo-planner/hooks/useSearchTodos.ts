@@ -1,50 +1,34 @@
 import { useState, useCallback } from 'react';
-import { TodoFilterOptions, Todo, ApiResponse } from '../types/index';
+import { TodoFilterOptions, TodoResult } from '../types';
 import { todoService } from '../services/TodoService';
 
 export function useSearchTodos(dashboardId: string | null) {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const searchTodos = useCallback(async (query: string, options?: TodoFilterOptions): Promise<ApiResponse<Todo[]>> => {
+  const searchTodos = useCallback(async (query: string, filters?: TodoFilterOptions): Promise<TodoResult> => {
     if (!dashboardId) {
-      const errorMessage = 'No dashboard selected';
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: 'No dashboard selected' };
     }
 
+    setIsSearching(true);
+    setError(null);
+
     try {
-      setIsSearching(true);
-      setError(null);
-      
-      const response = await todoService.searchTodos(dashboardId, query, options);
-      
-      setIsSearching(false);
-      
-      if (!response.success) {
-        setError(response.error || 'Failed to search todos');
-      }
-      
-      return response;
-    } catch (error) {
-      setIsSearching(false);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const result = await todoService.searchTodos(dashboardId, query, filters);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to search todos';
       setError(errorMessage);
-      
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSearching(false);
     }
   }, [dashboardId]);
 
   return {
     searchTodos,
     isSearching,
-    error,
-    clearError: () => setError(null)
+    error
   };
 } 

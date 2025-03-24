@@ -1,39 +1,15 @@
 import { 
-  Tag,
-  ApiResponse,
-  OperationResult
+  OperationResult,
+  CreateTagInput,
+  UpdateTagInput,
+  TagResponse as TagResult,
+  ITagService,
+  TagOperationResult
 } from '../types/index';
-
-// Define interfaces for the service
-interface CreateTagData {
-  name: string;
-  color: string;
-}
-
-interface UpdateTagData {
-  name?: string;
-  color?: string;
-}
-
-interface TagsResult extends ApiResponse<Tag[]> {
-  tags?: Tag[];
-}
-
-interface TagResult extends ApiResponse<Tag> {
-  tag?: Tag;
-}
-
-interface ITagService {
-  getTags(dashboardId: string): Promise<TagsResult>;
-  createTag(dashboardId: string, data: CreateTagData): Promise<TagResult>;
-  updateTag(dashboardId: string, tagId: string, data: UpdateTagData): Promise<TagResult>;
-  deleteTag(dashboardId: string, tagId: string): Promise<OperationResult>;
-}
-
-import { httpService } from '@/common/http';
 
 export class TagService implements ITagService {
   private static instance: TagService;
+  private readonly baseUrl = '/api/todo/dashboards';
   
   private constructor() {}
   
@@ -44,110 +20,103 @@ export class TagService implements ITagService {
     return TagService.instance;
   }
 
-  public async getTags(dashboardId: string): Promise<TagsResult> {
+  private async fetch<T>(url: string, options: RequestInit = {}): Promise<T> {
     try {
-      const response = await httpService.get<Tag[]>(`/api/todo/dashboards/${dashboardId}/tags`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      return {
-        success: true,
-        tags: response.data as Tag[]
-      };
+
+      return await response.json();
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  private handleApiError(error: unknown): Error {
+    if (error instanceof Error) {
+      return error;
+    }
+    return new Error('An unexpected error occurred');
+  }
+
+  public async getTags(dashboardId: string): Promise<TagResult> {
+    try {
+      const response = await this.fetch<TagResult>(`${this.baseUrl}/${dashboardId}/tags`);
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: this.handleApiError(error).message
       };
     }
   }
 
-  public async createTag(dashboardId: string, data: CreateTagData): Promise<TagResult> {
+  public async getTagById(dashboardId: string, tagId: string): Promise<TagOperationResult> {
     try {
-      if (!this.validateTagData(data)) {
-        return {
-          success: false,
-          error: 'Tag name and color are required'
-        };
-      }
-      
-      const response = await httpService.post<Tag>(`/api/todo/dashboards/${dashboardId}/tags`, data);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
-      
-      return {
-        success: true,
-        tag: response.data as Tag
-      };
+      const response = await this.fetch<TagOperationResult>(`${this.baseUrl}/${dashboardId}/tags/${tagId}`);
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: this.handleApiError(error).message
       };
     }
   }
 
-  public async updateTag(dashboardId: string, tagId: string, data: UpdateTagData): Promise<TagResult> {
+  public async createTag(dashboardId: string, data: CreateTagInput): Promise<TagOperationResult> {
     try {
-      const response = await httpService.put<Tag>(`/api/todo/dashboards/${dashboardId}/tags/${tagId}`, data);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
-      
-      return {
-        success: true,
-        tag: response.data as Tag
-      };
+      const response = await this.fetch<TagOperationResult>(`${this.baseUrl}/${dashboardId}/tags`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: this.handleApiError(error).message
+      };
+    }
+  }
+
+  public async updateTag(dashboardId: string, tagId: string, data: UpdateTagInput): Promise<TagOperationResult> {
+    try {
+      const response = await this.fetch<TagOperationResult>(`${this.baseUrl}/${dashboardId}/tags/${tagId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: this.handleApiError(error).message
       };
     }
   }
 
   public async deleteTag(dashboardId: string, tagId: string): Promise<OperationResult> {
     try {
-      const response = await httpService.delete(`/api/todo/dashboards/${dashboardId}/tags/${tagId}`);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          error: response.error
-        };
-      }
-      
-      return {
-        success: true
-      };
+      const response = await this.fetch<OperationResult>(`${this.baseUrl}/${dashboardId}/tags/${tagId}`, {
+        method: 'DELETE'
+      });
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: this.handleApiError(error)
+        error: this.handleApiError(error).message
       };
     }
   }
 
-  private validateTagData(data: CreateTagData): boolean {
-    return !!data.name?.trim() && !!data.color?.trim();
-  }
-  
-  private handleApiError(error: unknown): string {
-    return error instanceof Error ? error.message : 'An unexpected error occurred';
+  private validateTagData(data: CreateTagInput): boolean {
+    return !!data.name?.trim();
   }
 }
 

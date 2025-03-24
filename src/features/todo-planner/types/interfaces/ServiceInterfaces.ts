@@ -1,55 +1,55 @@
 import { 
-  AddMemberInput, 
-  CreateDashboardInput, 
-  CreateTagInput, 
-  CreateTodoInput,
-  UpdateDashboardInput,
-  UpdateMemberInput,
-  UpdateTagInput,
-  UpdateTodoInput
-} from '../api/RequestTypes';
+  TodoFilterOptions,
+  TodoResult,
+  TodoOperationResult,
+  OperationResult,
+  TagResult,
+  TagOperationResult,
+  DashboardResult,
+  DashboardOperationResult,
+  MemberResult,
+  MemberOperationResult
+} from '../index';
+
 import {
-  DashboardResponse,
-  DashboardsResponse,
-  MemberResponse,
-  MembersResponse,
-  TagResponse,
-  TagsResponse,
-  TodoResponse,
-  TodosResponse
-} from '../api/ResponseTypes';
-import { TodoFilterOptions } from '../core/TodoTypes';
-import { ApiResponse } from '@/common/http/types';
+  CreateTodoInput,
+  UpdateTodoInput,
+  CreateTagInput,
+  UpdateTagInput,
+  CreateDashboardInput,
+  UpdateDashboardInput
+} from '../api/RequestTypes';
 
 export interface ITodoService {
-  getTodos(dashboardId: string, filters?: TodoFilterOptions): Promise<TodosResponse>;
-  getTodoById(dashboardId: string, todoId: string | number): Promise<TodoResponse>;
-  createTodo(dashboardId: string, data: CreateTodoInput): Promise<TodoResponse>;
-  updateTodo(dashboardId: string, todoId: string | number, data: UpdateTodoInput): Promise<TodoResponse>;
-  deleteTodo(dashboardId: string, todoId: string | number): Promise<ApiResponse<void>>;
-  completeTodo(dashboardId: string, todoId: string | number): Promise<TodoResponse>;
-  uncompleteTodo(dashboardId: string, todoId: string | number): Promise<TodoResponse>;
-  searchTodos(dashboardId: string, query: string, filters?: TodoFilterOptions): Promise<TodosResponse>;
+  getTodos(dashboardId: string, filters?: TodoFilterOptions): Promise<TodoResult>;
+  getTodoById(dashboardId: string, todoId: string): Promise<TodoOperationResult>;
+  createTodo(dashboardId: string, data: CreateTodoInput): Promise<TodoOperationResult>;
+  updateTodo(dashboardId: string, todoId: string, data: UpdateTodoInput): Promise<TodoOperationResult>;
+  deleteTodo(dashboardId: string, todoId: string | number): Promise<OperationResult>;
+  completeTodo(dashboardId: string, todoId: string): Promise<TodoOperationResult>;
+  uncompleteTodo(dashboardId: string, todoId: string): Promise<TodoOperationResult>;
+  searchTodos(dashboardId: string, query: string, filters?: TodoFilterOptions): Promise<TodoResult>;
 }
 
 export interface ITagService {
-  getTags(dashboardId: string): Promise<TagsResponse>;
-  createTag(dashboardId: string, data: CreateTagInput): Promise<TagResponse>;
-  updateTag(dashboardId: string, tagId: string, data: UpdateTagInput): Promise<TagResponse>;
-  deleteTag(dashboardId: string, tagId: string): Promise<ApiResponse<void>>;
+  getTags(dashboardId: string): Promise<TagResult>;
+  getTagById(dashboardId: string, tagId: string): Promise<TagOperationResult>;
+  createTag(dashboardId: string, data: CreateTagInput): Promise<TagOperationResult>;
+  updateTag(dashboardId: string, tagId: string, data: UpdateTagInput): Promise<TagOperationResult>;
+  deleteTag(dashboardId: string, tagId: string): Promise<OperationResult>;
 }
 
 export interface IDashboardService {
-  getDashboards(): Promise<DashboardsResponse>;
-  getDashboardById(id: string): Promise<DashboardResponse>;
-  createDashboard(data: CreateDashboardInput): Promise<DashboardResponse>;
-  updateDashboard(id: string, data: UpdateDashboardInput): Promise<DashboardResponse>;
-  deleteDashboard(id: string): Promise<ApiResponse<void>>;
+  getDashboards(): Promise<DashboardResult>;
+  getDashboardById(id: string): Promise<DashboardOperationResult>;
+  createDashboard(data: CreateDashboardInput): Promise<DashboardOperationResult>;
+  updateDashboard(id: string, data: UpdateDashboardInput): Promise<DashboardOperationResult>;
+  deleteDashboard(id: string): Promise<OperationResult>;
 }
 
 export interface IDashboardMemberService {
-  getDashboardMembers(dashboardId: string): Promise<MembersResponse>;
-  addDashboardMember(dashboardId: string, data: AddMemberInput): Promise<MemberResponse>;
-  updateDashboardMember(dashboardId: string, memberId: string, data: UpdateMemberInput): Promise<MemberResponse>;
-  removeDashboardMember(dashboardId: string, memberId: string): Promise<ApiResponse<void>>;
+  getDashboardMembers(dashboardId: string): Promise<MemberResult>;
+  addDashboardMember(dashboardId: string, data: { email: string; role: string }): Promise<MemberOperationResult>;
+  updateDashboardMember(dashboardId: string, memberId: string, data: { role: string }): Promise<MemberOperationResult>;
+  removeDashboardMember(dashboardId: string, memberId: string): Promise<OperationResult>;
 } 

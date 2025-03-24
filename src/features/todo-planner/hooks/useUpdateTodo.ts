@@ -1,52 +1,35 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { UpdateTodoInput } from '../types/api/RequestTypes';
-import { Todo } from '../types/core/TodoTypes';
 import { todoService } from '../services/TodoService';
-import { ApiResponse } from '@/common/http/types';
+import { TodoOperationResult } from '../types';
 
 export function useUpdateTodo(dashboardId: string | null) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateTodo = useCallback(async (todoId: number, input: UpdateTodoInput): Promise<ApiResponse<Todo>> => {
+  const updateTodo = async (todoId: number | string, input: UpdateTodoInput): Promise<TodoOperationResult> => {
     if (!dashboardId) {
-      const errorMessage = 'No dashboard selected';
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: 'No dashboard selected' };
     }
 
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      const response = await todoService.updateTodo(dashboardId, todoId.toString(), input);
-      
-      setIsSubmitting(false);
-      
-      if (!response.success) {
-        setError(response.error || 'Failed to update todo');
-      }
-      
-      return response;
-    } catch (error) {
-      setIsSubmitting(false);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const result = await todoService.updateTodo(dashboardId, String(todoId), input);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update todo';
       setError(errorMessage);
-      
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [dashboardId]);
+  };
 
   return {
     updateTodo,
     isSubmitting,
-    error,
-    clearError: () => setError(null)
+    error
   };
 } 

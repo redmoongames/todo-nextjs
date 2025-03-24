@@ -1,10 +1,10 @@
 import { ISessionService, User } from '../types';
-import { httpService } from '@/common/http';
 
 export class SessionService implements ISessionService {
   private static instance: SessionService;
   private sessionToken: string | null = null;
   private sessionExpiry: Date | null = null;
+  private readonly baseUrl = '/api/auth';
   
   private constructor() {}
   
@@ -17,43 +17,53 @@ export class SessionService implements ISessionService {
 
   public async checkSession(): Promise<{ isAuthenticated: boolean; user: User | null }> {
     try {
-      const response = await httpService.get<{ success: boolean }>('/api/auth/session');
+      const response = await fetch(`${this.baseUrl}/session`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
-      if (!response.success) {
+      if (!response.ok) {
         return { isAuthenticated: false, user: null };
       }
       
       return this.getUserInfo();
-    } catch (error) {
-      console.error('Session check error:', error);
+    } catch {
       return { isAuthenticated: false, user: null };
     }
   }
   
-  public async getUserInfo(): Promise<{ isAuthenticated: boolean; user: User | null }> {
+  private async getUserInfo(): Promise<{ isAuthenticated: boolean; user: User | null }> {
     try {
-      const response = await httpService.get<User>('/api/auth/user');
+      const response = await fetch(`${this.baseUrl}/user`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
-      if (!response.success || !response.data) {
+      const data = await response.json();
+      
+      if (!response.ok || !data) {
         return { isAuthenticated: false, user: null };
       }
       
       return { 
         isAuthenticated: true, 
-        user: response.data 
+        user: data 
       };
-    } catch (error) {
-      console.error('Get user info error:', error);
+    } catch {
       return { isAuthenticated: false, user: null };
     }
   }
   
   public async refreshSession(): Promise<boolean> {
     try {
-      const response = await httpService.post<{ success: boolean }>('/api/auth/refresh');
-      return response.success;
-    } catch (error) {
-      console.error('Session refresh error:', error);
+      const response = await fetch(`${this.baseUrl}/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      return response.ok;
+    } catch {
       return false;
     }
   }

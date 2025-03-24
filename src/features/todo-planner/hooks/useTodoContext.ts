@@ -4,8 +4,10 @@ import {
   TodoFilterOptions,
   CreateTodoInput,
   UpdateTodoInput,
-  ApiResponse
-} from '../types/index';
+  TodoOperationResult,
+  OperationResult,
+  TodoResult
+} from '../types';
 import { TodoContextType } from '../components/TodoContext';
 
 import {
@@ -55,67 +57,63 @@ export function useTodoContext(): TodoContextType {
     return originalFetchTodos(options);
   }, [originalFetchTodos]);
 
-  const createTodo = useCallback(async (input: CreateTodoInput): Promise<ApiResponse<Todo>> => {
+  const createTodo = useCallback(async (input: CreateTodoInput): Promise<TodoOperationResult> => {
     const result = await originalCreateTodo(input);
-    if (result.success && result.data) {
+    if (result.success && result.todo) {
       return {
         ...result,
-        data: convertTodoForContext(result.data)
+        todo: convertTodoForContext(result.todo)
       };
     }
-    return result as ApiResponse<Todo>;
+    return result;
   }, [originalCreateTodo]);
 
-  const updateTodo = useCallback(async (todoId: number | string, input: UpdateTodoInput): Promise<ApiResponse<Todo>> => {
-    const numericId = typeof todoId === 'string' ? parseInt(todoId) : todoId;
-    const result = await originalUpdateTodo(numericId, input);
-    if (result.success && result.data) {
+  const updateTodo = useCallback(async (todoId: number | string, input: UpdateTodoInput): Promise<TodoOperationResult> => {
+    const result = await originalUpdateTodo(todoId, input);
+    if (result.success && result.todo) {
       return {
         ...result,
-        data: convertTodoForContext(result.data)
+        todo: convertTodoForContext(result.todo)
       };
     }
-    return result as ApiResponse<Todo>;
+    return result;
   }, [originalUpdateTodo]);
 
-  const deleteTodo = useCallback(async (todoId: number | string): Promise<ApiResponse<void>> => {
-    const numericId = typeof todoId === 'string' ? parseInt(todoId) : todoId;
-    return originalDeleteTodo(numericId);
+  const deleteTodo = useCallback(async (todoId: number | string): Promise<OperationResult> => {
+    return originalDeleteTodo(todoId);
   }, [originalDeleteTodo]);
 
-  const completeTodo = useCallback(async (todoId: number | string): Promise<ApiResponse<Todo>> => {
-    const numericId = typeof todoId === 'string' ? parseInt(todoId) : todoId;
-    const result = await originalCompleteTodo(numericId);
-    if (result.success && result.data) {
+  const completeTodo = useCallback(async (todoId: number | string): Promise<TodoOperationResult> => {
+    const result = await originalCompleteTodo(todoId);
+    if (result.success && result.todo) {
       return {
         ...result,
-        data: convertTodoForContext(result.data)
+        todo: convertTodoForContext(result.todo)
       };
     }
-    return result as ApiResponse<Todo>;
+    return result;
   }, [originalCompleteTodo]);
 
-  const uncompleteTodo = useCallback(async (todoId: number | string): Promise<ApiResponse<Todo>> => {
-    const numericId = typeof todoId === 'string' ? parseInt(todoId) : todoId;
-    const result = await originalUncompleteTodo(numericId);
-    if (result.success && result.data) {
+  const uncompleteTodo = useCallback(async (todoId: number | string): Promise<TodoOperationResult> => {
+    const result = await originalUncompleteTodo(todoId);
+    if (result.success && result.todo) {
       return {
         ...result,
-        data: convertTodoForContext(result.data)
+        todo: convertTodoForContext(result.todo)
       };
     }
-    return result as ApiResponse<Todo>;
+    return result;
   }, [originalUncompleteTodo]);
 
-  const searchTodos = useCallback(async (query: string, options?: TodoFilterOptions): Promise<ApiResponse<Todo[]>> => {
+  const searchTodos = useCallback(async (query: string, options?: TodoFilterOptions): Promise<TodoResult> => {
     const result = await originalSearchTodos(query, options);
-    if (result.success && result.data) {
+    if (result.success && result.todos) {
       return {
         ...result,
-        data: result.data.map(convertTodoForContext)
+        todos: result.todos.map(convertTodoForContext)
       };
     }
-    return result as ApiResponse<Todo[]>;
+    return result;
   }, [originalSearchTodos]);
 
   return {

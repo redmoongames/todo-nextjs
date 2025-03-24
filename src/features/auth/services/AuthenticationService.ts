@@ -2,42 +2,36 @@ import {
   IAuthenticationService, 
   AuthResult, 
   LoginCredentials, 
-  RegisterData 
+  RegisterData,
+  User
 } from '../types';
-import { sessionService } from './SessionService';
-import { httpService } from '@/common/http';
 
-// Define interfaces for API responses
 interface LoginResponse {
-  user: {
-    id: string;
-    username: string;
-    email: string;
-  };
+  user: User;
   tokens: {
     access_token: string;
     refresh_token: string;
   };
 }
 
-interface RegisterResponse {
-  user: {
-    id: string;
-    username: string;
-    email: string;
-  };
-}
-
 export class AuthenticationService implements IAuthenticationService {
-  private static instance: AuthenticationService;
-  
-  private constructor() {}
-  
-  public static getInstance(): AuthenticationService {
-    if (!AuthenticationService.instance) {
-      AuthenticationService.instance = new AuthenticationService();
+  private async fetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(endpoint, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...init?.headers,
+      }
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Request failed');
     }
-    return AuthenticationService.instance;
+
+    return data;
   }
 
   public async login(credentials: LoginCredentials): Promise<AuthResult> {
@@ -49,50 +43,30 @@ export class AuthenticationService implements IAuthenticationService {
     }
     
     try {
-      const payload = this.prepareLoginPayload(credentials);
+      const data = await this.fetch<LoginResponse>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: credentials.username.trim(),
+          password: credentials.password
+        })
+      });
       
-      const response = await httpService.post<LoginResponse>('/api/auth/login', payload);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          message: response.error || 'Login failed. Please check your credentials.'
-        };
-      }
-      
-      return this.handleSuccessfulLogin();
+      return {
+        success: true,
+        message: 'Login successful',
+        user: data.user
+      };
     } catch (error) {
-      return this.handleLoginError(error);
+      console.error('Login error:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred during login'
+      };
     }
   }
   
   public validateLoginCredentials(credentials: LoginCredentials): boolean {
     return Boolean(credentials.username && credentials.password);
-  }
-  
-  private prepareLoginPayload(credentials: LoginCredentials): object {
-    return {
-      username: credentials.username.trim(),
-      password: credentials.password
-    };
-  }
-  
-  private async handleSuccessfulLogin(): Promise<AuthResult> {
-    const userInfo = await sessionService.getUserInfo();
-    
-    return {
-      success: true,
-      message: 'Login successful',
-      user: userInfo.user || undefined
-    };
-  }
-  
-  private handleLoginError(error: unknown): AuthResult {
-    console.error('Login error:', error);
-    return {
-      success: false,
-      message: 'An error occurred during login. Please try again.'
-    };
   }
   
   public async register(data: RegisterData): Promise<AuthResult> {
@@ -106,23 +80,25 @@ export class AuthenticationService implements IAuthenticationService {
     }
     
     try {
-      const requestData = this.prepareRegistrationData(data);
-      
-      const response = await httpService.post<RegisterResponse>('/api/auth/register', requestData);
-      
-      if (!response.success) {
-        return {
-          success: false,
-          message: response.error || 'Registration failed'
-        };
-      }
+      await this.fetch<LoginResponse>('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: data.username,
+          email: data.email,
+          password: data.password
+        })
+      });
       
       return {
         success: true,
         message: 'Registration successful'
       };
     } catch (error) {
-      return this.handleRegistrationError(error);
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred during registration'
+      };
     }
   }
   
@@ -147,35 +123,15 @@ export class AuthenticationService implements IAuthenticationService {
     return { isValid: true };
   }
   
-  private prepareRegistrationData(data: RegisterData): object {
-    return {
-      username: data.username,
-      email: data.email,
-      password: data.password
-    };
-  }
-  
-  private handleRegistrationError(error: unknown): AuthResult {
-    console.error('Registration error:', error);
-    return {
-      success: false,
-      message: 'An error occurred during registration. Please try again.'
-    };
-  }
-  
   public async logout(): Promise<{ success: boolean; redirect?: string }> {
     try {
-      const response = await httpService.post<{ redirect?: string }>('/api/auth/logout');
-      
-      if (!response.success) {
-        return { success: false };
-      }
-      
-      sessionService.clearSession();
+      const data = await this.fetch<{ redirect?: string }>('/api/auth/logout', {
+        method: 'POST'
+      });
       
       return { 
         success: true, 
-        redirect: response.data?.redirect || '/login'
+        redirect: data.redirect || '/login'
       };
     } catch (error) {
       console.error('Logout error:', error);
@@ -184,4 +140,4 @@ export class AuthenticationService implements IAuthenticationService {
   }
 }
 
-export const authenticationService = AuthenticationService.getInstance(); 
+export const authenticationService = new AuthenticationService(); 

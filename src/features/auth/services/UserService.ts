@@ -1,9 +1,9 @@
 import { IUserService, User } from '../types';
-import { httpService } from '@/common/http';
 import { sessionService } from './SessionService';
 
 export class UserService implements IUserService {
   private static instance: UserService;
+  private readonly baseUrl = '/api/auth';
   
   private constructor() {}
   
@@ -15,60 +15,115 @@ export class UserService implements IUserService {
   }
 
   public async getCurrentUser(): Promise<User | null> {
-    const response = await httpService.get<User>('/api/auth/user');
-    
-    if (!response.success || !response.data) {
+    try {
+      const response = await fetch(`${this.baseUrl}/user`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data) {
+        return null;
+      }
+      
+      return data;
+    } catch {
       return null;
     }
-    
-    return response.data;
   }
   
   public async getUserById(userId: string): Promise<User | null> {
-    const response = await httpService.get<User>(`/api/auth/users/${userId}`);
-    
-    if (!response.success || !response.data) {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data) {
+        return null;
+      }
+      
+      return data;
+    } catch {
       return null;
     }
-    
-    return response.data;
   }
   
   public async updateUserProfile(userId: string, profileData: Partial<User>): Promise<boolean> {
-    const response = await httpService.put<User>(`/api/auth/users/${userId}`, profileData);
-    
-    return response.success;
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      });
+      
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
   
   public async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<boolean> {
-    const passwordData = {
-      oldPassword,
-      newPassword
-    };
-    
-    const response = await httpService.post<{ success: boolean }>(`/api/auth/users/${userId}/change-password`, passwordData);
-    
-    return response.success;
+    try {
+      const passwordData = {
+        oldPassword,
+        newPassword
+      };
+      
+      const response = await fetch(`${this.baseUrl}/users/${userId}/change-password`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(passwordData)
+      });
+      
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
   
   public async deleteAccount(userId: string, password: string): Promise<boolean> {
-    const response = await httpService.delete<{ success: boolean }>(`/api/auth/users/${userId}?password=${encodeURIComponent(password)}&confirmation=true`);
-    
-    if (response.success) {
-      sessionService.clearSession();
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}?password=${encodeURIComponent(password)}&confirmation=true`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        sessionService.clearSession();
+      }
+      
+      return response.ok;
+    } catch {
+      return false;
     }
-    
-    return response.success;
   }
 
   public async updateProfile(userData: Partial<User>): Promise<User | null> {
-    const response = await httpService.put<User>('/api/auth/user', userData);
-    
-    if (!response.success || !response.data) {
+    try {
+      const response = await fetch(`${this.baseUrl}/user`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data) {
+        return null;
+      }
+      
+      return data;
+    } catch {
       return null;
     }
-    
-    return response.data;
   }
 }
 
