@@ -139,7 +139,9 @@ class ProxyHandler {
     try {
       console.log('[ProxyHandler] Forwarding request to:', endpoint);
       const response = await this.apiClient.forwardRequest(request, endpoint, method);
+      console.log('[ProxyHandler] Response:', response);
       const responseText = await response.text();
+      console.log('[ProxyHandler] Response text:', responseText);
       const responseContentType = response.headers.get('content-type') || '';
 
       if (responseContentType.includes('text/html') && response.status >= 400) {
