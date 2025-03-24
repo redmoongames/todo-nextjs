@@ -6,7 +6,6 @@ import { LoginForm } from '@/features/auth/components/LoginForm';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useAuthState } from '@/features/auth/hooks/useAuthState';
 
-// Separate component to handle search params
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +15,6 @@ function LoginContent() {
   const { isAuthenticated, isLoading } = useAuthState();
   const { login, error, isSubmitting } = useLogin();
 
-  // Handle automatic redirect if already logged in
   useEffect(() => {
     if (!isLoading && isAuthenticated && !isRedirecting) {
       setIsRedirecting(true);
@@ -24,7 +22,6 @@ function LoginContent() {
     }
   }, [isAuthenticated, isLoading, router, callbackUrl, isRedirecting]);
 
-  // Handle login form submission
   const handleLogin = async (credentials: { username: string; password: string; rememberMe: boolean }) => {
     if (isRedirecting) return;
 
@@ -35,7 +32,6 @@ function LoginContent() {
     }
   };
 
-  // Prevent showing the form while redirecting
   if (isRedirecting) {
     return (
       <div className="flex flex-col items-center justify-center p-4">

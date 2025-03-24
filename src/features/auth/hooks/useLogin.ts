@@ -13,6 +13,7 @@ export function useLogin() {
   const { updateUser } = useAuthState();
 
   const login = async (credentials: LoginCredentials): Promise<AuthResult> => {
+    console.log('[useLogin] Login attempt with credentials:', credentials);
     if (!credentials.username || !credentials.password) {
       setError('Username and password are required');
       return { success: false, message: 'Username and password are required' };
@@ -29,7 +30,6 @@ export function useLogin() {
       if (!result.success) {
         setError(result.message || 'Login failed');
       } else if (result.user) {
-        // Update the auth state immediately on successful login
         updateUser(result.user);
       }
       

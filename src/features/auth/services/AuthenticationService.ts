@@ -16,6 +16,7 @@ interface LoginResponse {
 
 export class AuthenticationService implements IAuthenticationService {
   private async fetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
+    console.log('[AuthenticationService] Fetching from:', endpoint);
     const response = await fetch(endpoint, {
       ...init,
       credentials: 'include',
@@ -26,7 +27,7 @@ export class AuthenticationService implements IAuthenticationService {
     });
 
     const data = await response.json();
-    
+    console.log('[AuthenticationService] Response:', data);
     if (!response.ok) {
       throw new Error(data.message || 'Request failed');
     }
@@ -43,6 +44,7 @@ export class AuthenticationService implements IAuthenticationService {
     }
     
     try {
+      console.log('[AuthenticationService] Login attempt with credentials:', credentials);
       const data = await this.fetch<LoginResponse>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
