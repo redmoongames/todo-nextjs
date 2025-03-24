@@ -61,6 +61,7 @@ export async function forwardToBackend(
   
   try {
     const API_URL = getApiUrl();
+    console.log('[forwardToBackend] API URL:', API_URL);
     
     let body;
     const contentType = request.headers.get('content-type');
@@ -122,7 +123,8 @@ export async function forwardToBackend(
         credentials: 'include',
       });
     }
-    
+
+    console.log('[forwardToBackend] Response:', response);
     const responseStatus = response.status;
     const responseCookies = response.headers.getSetCookie();
     
