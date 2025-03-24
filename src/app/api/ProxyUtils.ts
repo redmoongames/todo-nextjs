@@ -81,7 +81,7 @@ class ApiClient {
     if (body) {
       fetchOptions.body = JSON.stringify(body);
     }
-
+    console.log('[ProxyHandler] Fetching:', targetUrl);
     return fetch(targetUrl, fetchOptions);
   }
 }
